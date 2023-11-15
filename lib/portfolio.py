@@ -1,6 +1,7 @@
 import lib.ratios as ratios
 import sys
 import statistics as st
+from datetime import datetime
 
 def track_portfolio(merged_df, condition, initial_capital):
     equity_curve = []
@@ -15,15 +16,14 @@ def track_portfolio(merged_df, condition, initial_capital):
     
     # Traverse through the merged data
     for i, row in merged_df.iterrows():
-        # stdev = st.stdev(merged_df['Value']) 
-        # mean = st.mean(merged_df['Value']) 
+        btc_price = merged_df['BTC_Price'][i]
         indicator_value = row['Value']
-        date =  row['Date'].strftime('%Y-%m-%d')
-        if i > 0:
-            btc_price = merged_df['BTC_Price'][i]
 
+        date =  row['Date'].strftime('%Y-%m-%d')
+        if i > 0 and (row['Date'] >= datetime(2018, 1, 1)):
+        # if i > 0:
             if indicator_value > condition:
-                if not current_position_is_long or not in_position:
+                if (not current_position_is_long or not in_position):
                     if in_position:
                         trades.append(get_trade_result(trade_open_price, btc_price,  trade_open_date, date, current_position_is_long))
                         
@@ -35,7 +35,7 @@ def track_portfolio(merged_df, condition, initial_capital):
 
                 capital = trade_volume * btc_price
             else:
-                if current_position_is_long or not in_position:
+                if (current_position_is_long or not in_position):
                     if in_position:
                         trades.append(get_trade_result(trade_open_price, btc_price,  trade_open_date, date, current_position_is_long))
 
@@ -95,14 +95,14 @@ def get_profit_factor(trades):
     pos_trades = 0
     neg_trades = 0
     
-    for  trade in trades:
+    for trade in trades:
         trade_return = trade["profit_loss"] 
         if trade_return > 0:
             pos_returns = pos_returns + trade_return
             pos_trades = pos_trades +1
         else:
             neg_returns = neg_returns + trade_return
-            neg_trades = neg_trades +1
+            neg_trades = neg_trades + 1
     
     return [pos_returns / (neg_returns * -1), (pos_trades / (pos_trades + neg_trades) * 100)]
 

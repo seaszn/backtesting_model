@@ -7,8 +7,8 @@ def get_ratios(data: Iterable[float]):
     neg_returns = []
     pos_returns = []
     for i in range(1, len(data)):
-        curr_rtrn = data[i] / data[i - 1] - 1
-        returns.append(data[i] / data[i - 1] - 1)
+        curr_rtrn = (data[i] / data[i - 1]) - 1
+        returns.append(curr_rtrn)
         if curr_rtrn < 0:
             neg_returns.append(curr_rtrn)
         else: 
