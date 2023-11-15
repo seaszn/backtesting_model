@@ -21,7 +21,7 @@ export default function ChartComponent(properties: ChartProperties) {
             layout: properties.layout,
             grid: properties.grid,
             width: chartContainerRef.current.clientWidth,
-            height: window.innerHeight,
+            height: chartContainerRef.current.clientHeight,
         });
         
         chart.timeScale().fitContent();
@@ -45,6 +45,6 @@ export default function ChartComponent(properties: ChartProperties) {
     );
 
     return (
-        <div className='w-full min-h-screen' ref={chartContainerRef}/>
+        <div className='w-full' style={{height: "100%"}} ref={chartContainerRef}/>
     );
 }

@@ -1,12 +1,12 @@
 'use client'
 
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import ChartComponent from "@/components/chart";
 import { LayoutOptions, GridOptions, ColorType, LineStyle, Time } from 'lightweight-charts'
 import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Button } from "@nextui-org/react";
 import { Upload } from 'lucide-react';
 import { open } from '@tauri-apps/api/dialog';
-import Selection from '@/components/selector';
+import Selection, { SelectReference } from '@/components/selector';
 import { IndicatorInfo, useIndicators } from '@/lib/hooks/useIndicatorData';
 import { MarketInfo, useMarkets } from '@/lib/hooks/useMarketData';
 import { TimeFrame, TimeFrames } from './types';
@@ -16,7 +16,6 @@ export enum View {
     IndicatorSelection,
     MarketSelection,
 }
-
 
 //#region Chart Options
 const layoutOptions: LayoutOptions = {
@@ -59,31 +58,26 @@ export default function Chart() {
     const markets = useMarkets();
     const [currentTimeFrame, selectTimeFrame] = useState<TimeFrame>(localStorage.getItem("selected_time_frame")! as TimeFrame);
 
-    function onIndicatorSelectionChanged(value: IndicatorInfo) {
+    const indicatorSelectRef = useRef<SelectReference>({})
+    const marketSelectRef = useRef<SelectReference>({})
+
+    const [currentIndicator, updateIndicator] = useState(indicators.current())
+    const [currentMarket, updateMarket] = useState(markets.current())
+
+    function onIndicatorChanged(value: IndicatorInfo) {
+        updateIndicator(value);
         indicators.select(value);
-        updateView(View.Chart)
     }
 
-    function onMarketSelectionChanged(market: MarketInfo) {
-        markets.selectMarket(market)
-        updateView(View.Chart)
+    function onMarketChanged(market: MarketInfo) {
+        updateMarket(market)
+        markets.select(market)
     }
 
-    function onTimeFrameChanged(timeFrame: TimeFrame){
+    function onTimeFrameChanged(timeFrame: TimeFrame) {
         localStorage.setItem("selected_time_frame", timeFrame);
         selectTimeFrame(timeFrame);
     }
-
-    //#region Middle View Manager
-    const [currentView, updateView] = useState<View>(View.Chart);
-    function getMiddleView() {
-        switch (currentView) {
-            case View.Chart: return <ChartComponent data={initialData} grid={gridOptions} layout={layoutOptions} />
-            case View.IndicatorSelection: return <Selection values={indicators.all} onConfirmed={(v) => onIndicatorSelectionChanged(v)} onCancelled={() => updateView(View.Chart)} />
-            case View.MarketSelection: return <Selection values={markets.all} onConfirmed={(v) => onMarketSelectionChanged(v)} onCancelled={() => updateView(View.Chart)} />
-        }
-    }
-    //#region 
 
     async function onUploadMarket() {
         const path = await open({
@@ -117,8 +111,17 @@ export default function Chart() {
         <div className='min-w-full min-h-screen sm:flex sm:flex-row'>
             {/* Middle Section */}
             <div className="w-full min-h-screen dark:bg-stone-900 bg-stone-100">
-                <div className='w-full h-full'>
-                    {getMiddleView()}
+                <div className='relative w-full h-full'>
+                    <div className='min-h-screen w-full max-h-screen'>
+                        <div className='w-full' style={{ height: "50vh" }}>
+                            <ChartComponent data={initialData} grid={gridOptions} layout={layoutOptions} />
+                        </div>
+                        <div className='w-full' style={{ height: "50vh" }}>
+                            <ChartComponent data={initialData} grid={gridOptions} layout={layoutOptions} />
+                        </div>
+                    </div>
+                    <Selection title="Select Indicator" onConfirmed={onIndicatorChanged} reference={indicatorSelectRef} values={indicators.all} />
+                    <Selection title='Select Market' onConfirmed={onMarketChanged} reference={marketSelectRef} values={markets.all} />
                 </div>
             </div>
 
@@ -144,7 +147,7 @@ export default function Chart() {
                                         <div className='w-full flex flex-row'>
                                             <DropdownTrigger>
                                                 <Button variant="bordered" className="capitalize grow text-left justify-start">
-                                                    {markets.currentMarket()!.name}
+                                                    {currentMarket?.name}
                                                 </Button>
                                             </DropdownTrigger>
                                             <Button onClick={async () => onUploadMarket()} variant="bordered" className=" min-w-0 w-10 h-10 ml-2 p-3 capitalize">
@@ -157,7 +160,7 @@ export default function Chart() {
                                             disallowEmptySelection
                                             selectionMode="single"
                                             selectedKeys={"none"}>
-                                            <DropdownItem key="Select" onClick={() => updateView(View.MarketSelection)} className='dark:text-white text-black'>Select</DropdownItem>
+                                            <DropdownItem key="Select" onClick={() => marketSelectRef.current.Open?.()} className='dark:text-white text-black'>Select</DropdownItem>
                                             <DropdownItem key="Download" onClick={markets.downloadCurrent} className='dark:text-white text-black'>Download</DropdownItem>
                                         </DropdownMenu>
                                     </Dropdown>
@@ -195,7 +198,7 @@ export default function Chart() {
                                         <div className='w-full flex flex-row'>
                                             <DropdownTrigger>
                                                 <Button variant="bordered" className="capitalize grow text-left justify-start">
-                                                    {indicators.current()!.name}
+                                                    {currentIndicator?.name}
                                                 </Button>
                                             </DropdownTrigger>
                                             <Button onClick={async () => onUploadIndicator()} variant="bordered" className=" min-w-0 w-10 h-10 ml-2 p-3 capitalize">
@@ -208,7 +211,7 @@ export default function Chart() {
                                             disallowEmptySelection
                                             selectionMode="single"
                                             selectedKeys={"none"}>
-                                            <DropdownItem key="Select" onClick={() => updateView(View.IndicatorSelection)} className='dark:text-white text-black'>Select</DropdownItem>
+                                            <DropdownItem key="Select" onClick={() => indicatorSelectRef.current.Open?.()} className='dark:text-white text-black'>Select</DropdownItem>
                                             <DropdownItem key="Download" onClick={indicators.downloadCurrent} className='dark:text-white text-black'>Download</DropdownItem>
                                         </DropdownMenu>
                                     </Dropdown>

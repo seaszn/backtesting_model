@@ -3,30 +3,63 @@ import {
     Button,
 } from "@nextui-org/react";
 import { Cross, X } from 'lucide-react';
+import { Console } from 'console';
+
+export interface SelectReference {
+    Open?: () => void
+    Close?: () => void
+}
 
 interface SelectionProperties<T> {
-    values: T[];
-    onConfirmed: (value: T) => void;
-    onCancelled: () => void;
+    values: T[]
+    title: string
+    intialState?: false
+    className?: string
+    onConfirmed?: (result: T) => void
+    reference: React.MutableRefObject<SelectReference>
 }
 
 export default function Selection<T extends object>(properties: SelectionProperties<T>) {
     const [selected, updateSelected] = React.useState<T | undefined>(undefined)
+    const [isActive, setActive] = React.useState(properties.intialState ? properties.intialState : false);
+
+    properties.reference.current.Open = Open;
 
     function cancelSelection() {
-        properties.onCancelled();
+        setActive(false);
     }
 
     function confirmSelection(value: T) {
-        properties.onConfirmed(value);
+        setActive(false);
+        properties.onConfirmed?.(value);
+    }
+
+    function Open() {
+        setActive(true)
+    }
+
+    function Close() {
+        setActive(false);
+    }
+
+    function formatClassess() {
+        let result = properties.className != undefined ? properties.className : "";
+
+        if (isActive) {
+            result += "w-full p-10"
+        }
+        else {
+            result += "w-0 p-10 px-0"
+        }
+
+        return result;
     }
 
     return (
-        <div className='relative w-full h-full p-10'>
+        <div className={formatClassess() + ' transition-all absolute top-0 z-40 bg-stone-100 dark:bg-stone-900 h-full overflow-hidden'}>
             <div className='flex w-full'>
-
-                <h3 className="my-auto text-lg font-medium leading-6 text-black dark:text-white">
-                    Select Indicator
+                <h3 className="my-auto min-w-max text-lg font-medium leading-6 text-black dark:text-white">
+                    {properties.title}
                 </h3>
                 <span onClick={() => cancelSelection()} className='ml-auto text-black dark:text-white hover:bg-stone-200 active:bg-stone-300 dark:active:bg-stone-800 rounded-full p-1 dark:hover:bg-stone-700 '>
                     <X />
@@ -83,4 +116,13 @@ export default function Selection<T extends object>(properties: SelectionPropert
             </div>
         </div>
     )
+}
+
+Selection.defaultProps = {
+    // isActive: 
+    reference: {
+        current: {
+            Open: undefined
+        }
+    }
 }

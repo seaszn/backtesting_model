@@ -8,16 +8,16 @@ export interface MarketInfo {
 
 interface MarketState {
     all: MarketInfo[],
-    currentMarket: () => MarketInfo | undefined
-    selectMarket: (market: MarketInfo) => void
+    current: () => MarketInfo | undefined
+    select: (market: MarketInfo) => void
     refresh: () => Promise<MarketInfo[]>
     downloadCurrent: () => void
 }
 
 const initState: MarketState = {
     all: [],
-    currentMarket,
-    selectMarket,
+    current: currentMarket,
+    select: selectMarket,
     refresh,
     downloadCurrent
 }
@@ -57,16 +57,16 @@ const useMarketData = () => {
         refresh().then(x => {
             setState({
                 all: x,
-                currentMarket,
-                selectMarket,
+                current: currentMarket,
+                select: selectMarket,
                 refresh,
                 downloadCurrent
             });
         }).catch(x => {
             setState({
                 all: [],
-                currentMarket,
-                selectMarket,
+                current: currentMarket,
+                select: selectMarket,
                 refresh,
                 downloadCurrent
             });

@@ -31,7 +31,7 @@ export default function RootLayout(properties: ParentComponentProperties) {
     });
 
     const marketSetup = markets.refresh().then(result => {
-      markets.selectMarket(result[0])
+      markets.select(result[0])
     });
 
     const timeFrameSetup = new Promise<void>(resolve => {
