@@ -8,16 +8,18 @@ export interface MarketInfo {
 
 interface MarketState {
     all: MarketInfo[],
-    current: () => MarketInfo | undefined,
-    select: (indicator: MarketInfo) => void
+    currentMarket: () => MarketInfo | undefined
+    selectMarket: (market: MarketInfo) => void
     refresh: () => Promise<MarketInfo[]>
+    downloadCurrent: () => void
 }
 
 const initState: MarketState = {
     all: [],
-    current,
-    select,
-    refresh
+    currentMarket,
+    selectMarket,
+    refresh,
+    downloadCurrent
 }
 
 async function refresh() {
@@ -29,11 +31,11 @@ async function refresh() {
     }
 }
 
-function select(indicator: MarketInfo) {
-    localStorage.setItem("selected_market", JSON.stringify(indicator))
+function selectMarket(market: MarketInfo) {
+    localStorage.setItem("selected_market", JSON.stringify(market))
 }
 
-function current(): MarketInfo | undefined {
+function currentMarket(): MarketInfo | undefined {
     const result = localStorage.getItem("selected_market")
 
     if (result == null) {
@@ -44,6 +46,10 @@ function current(): MarketInfo | undefined {
     }
 }
 
+function downloadCurrent() {
+
+}
+
 const useMarketData = () => {
     const [state, setState] = useState(initState);
 
@@ -51,16 +57,18 @@ const useMarketData = () => {
         refresh().then(x => {
             setState({
                 all: x,
-                current,
-                select,
-                refresh: refresh
+                currentMarket,
+                selectMarket,
+                refresh,
+                downloadCurrent
             });
         }).catch(x => {
             setState({
                 all: [],
-                current,
-                select,
-                refresh: refresh
+                currentMarket,
+                selectMarket,
+                refresh,
+                downloadCurrent
             });
         })
     }, []);

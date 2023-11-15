@@ -13,13 +13,15 @@ interface IndicatorState {
     current: () => IndicatorInfo | undefined,
     select: (indicator: IndicatorInfo) => void
     refresh: () => Promise<IndicatorInfo[]>
+    downloadCurrent: () => void
 }
 
 const initState: IndicatorState = {
     all: [],
-    current: current,
-    select: select,
-    refresh: refresh
+    current,
+    select,
+    refresh,
+    downloadCurrent
 }
 
 async function refresh() {
@@ -47,6 +49,10 @@ function current(): IndicatorInfo | undefined {
     }
 }
 
+function downloadCurrent() {
+
+}
+
 const useIndicatorData = () => {
     const [state, setState] = useState(initState);
 
@@ -56,14 +62,16 @@ const useIndicatorData = () => {
                 all: x,
                 current,
                 select,
-                refresh
+                refresh,
+                downloadCurrent
             });
         }).catch(x => {
             setState({
                 all: [],
                 current,
                 select,
-                refresh
+                refresh,
+                downloadCurrent
             });
         })
     }, []);

@@ -2,18 +2,21 @@
 
 import React, { useState } from 'react';
 import ChartComponent from "@/components/chart";
-import { LayoutOptions, GridOptions, ColorType, LineStyle } from 'lightweight-charts'
+import { LayoutOptions, GridOptions, ColorType, LineStyle, Time } from 'lightweight-charts'
 import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Button } from "@nextui-org/react";
-import { Source, TimeFrame} from './types';
 import { Upload } from 'lucide-react';
 import { open } from '@tauri-apps/api/dialog';
 import Selection from '@/components/selector';
 import { IndicatorInfo, useIndicators } from '@/lib/hooks/useIndicatorData';
+import { MarketInfo, useMarkets } from '@/lib/hooks/useMarketData';
+import { TimeFrame, TimeFrames } from './types';
 
-export enum View{
+export enum View {
     Chart,
-    IndicatorSelection
+    IndicatorSelection,
+    MarketSelection,
 }
+
 
 //#region Chart Options
 const layoutOptions: LayoutOptions = {
@@ -52,28 +55,35 @@ const initialData = [
 //#endregion
 
 export default function Chart() {
-    const sources: Source[] = ["Bitcoin", "Ethereum"]
-    const timeFrames: TimeFrame[] = ["1D", "2D", "3D"]
-
     const indicators = useIndicators();
-    const [currentView, updateView] = useState<View>(View.Chart);
-
-    const [currentMarket, selectMarket] = React.useState<Source>("Bitcoin");
-    const [currentTimeFrime, selectTimeFrame] = React.useState<TimeFrame>("1D");
+    const markets = useMarkets();
+    const [currentTimeFrame, selectTimeFrame] = useState<TimeFrame>(localStorage.getItem("selected_time_frame")! as TimeFrame);
 
     function onIndicatorSelectionChanged(value: IndicatorInfo) {
         indicators.select(value);
         updateView(View.Chart)
     }
 
-    function onMarketOptionsChanged(source: Source, timeFrame: TimeFrame) {
-        selectMarket(source);
+    function onMarketSelectionChanged(market: MarketInfo) {
+        markets.selectMarket(market)
+        updateView(View.Chart)
+    }
+
+    function onTimeFrameChanged(timeFrame: TimeFrame){
+        localStorage.setItem("selected_time_frame", timeFrame);
         selectTimeFrame(timeFrame);
     }
 
-    function onDownloadIndicatorData() {
-        // setSelectedIndicator(source);
+    //#region Middle View Manager
+    const [currentView, updateView] = useState<View>(View.Chart);
+    function getMiddleView() {
+        switch (currentView) {
+            case View.Chart: return <ChartComponent data={initialData} grid={gridOptions} layout={layoutOptions} />
+            case View.IndicatorSelection: return <Selection values={indicators.all} onConfirmed={(v) => onIndicatorSelectionChanged(v)} onCancelled={() => updateView(View.Chart)} />
+            case View.MarketSelection: return <Selection values={markets.all} onConfirmed={(v) => onMarketSelectionChanged(v)} onCancelled={() => updateView(View.Chart)} />
+        }
     }
+    //#region 
 
     async function onUploadMarket() {
         const path = await open({
@@ -108,12 +118,7 @@ export default function Chart() {
             {/* Middle Section */}
             <div className="w-full min-h-screen dark:bg-stone-900 bg-stone-100">
                 <div className='w-full h-full'>
-                    {
-                        currentView == View.Chart ?
-                            <ChartComponent data={initialData} grid={gridOptions} layout={layoutOptions} />
-                            :
-                            <Selection values={indicators.all} onConfirmed={(v) => onIndicatorSelectionChanged(v)} onCancelled={() => updateView(View.Chart)} />
-                    }
+                    {getMiddleView()}
                 </div>
             </div>
 
@@ -138,10 +143,8 @@ export default function Chart() {
                                     <Dropdown>
                                         <div className='w-full flex flex-row'>
                                             <DropdownTrigger>
-                                                <Button variant="bordered" className=" justify-start capitalize grow">
-                                                    {/* <ListIcon/> */}
-                                                    {currentMarket}
-
+                                                <Button variant="bordered" className="capitalize grow text-left justify-start">
+                                                    {markets.currentMarket()!.name}
                                                 </Button>
                                             </DropdownTrigger>
                                             <Button onClick={async () => onUploadMarket()} variant="bordered" className=" min-w-0 w-10 h-10 ml-2 p-3 capitalize">
@@ -153,10 +156,9 @@ export default function Chart() {
                                             variant="flat"
                                             disallowEmptySelection
                                             selectionMode="single"
-                                            selectedKeys={currentMarket}>
-                                            {sources.map((value) => (
-                                                <DropdownItem key={value} className='dark:text-white text-black' onClick={(e) => onMarketOptionsChanged(value, currentTimeFrime)}>{value}</DropdownItem>
-                                            ))}
+                                            selectedKeys={"none"}>
+                                            <DropdownItem key="Select" onClick={() => updateView(View.MarketSelection)} className='dark:text-white text-black'>Select</DropdownItem>
+                                            <DropdownItem key="Download" onClick={markets.downloadCurrent} className='dark:text-white text-black'>Download</DropdownItem>
                                         </DropdownMenu>
                                     </Dropdown>
                                 </div>
@@ -165,7 +167,7 @@ export default function Chart() {
                                     <Dropdown>
                                         <DropdownTrigger>
                                             <Button variant="bordered" className="capitalize w-full">
-                                                {currentTimeFrime}
+                                                {currentTimeFrame}
                                             </Button>
                                         </DropdownTrigger>
                                         <DropdownMenu
@@ -173,9 +175,9 @@ export default function Chart() {
                                             variant="flat"
                                             disallowEmptySelection
                                             selectionMode="single"
-                                            selectedKeys={currentTimeFrime}>
-                                            {timeFrames.map((value) => (
-                                                <DropdownItem key={value} className='dark:text-white text-black' onClick={(e) => onMarketOptionsChanged(currentMarket, value)}>{value}</DropdownItem>
+                                            selectedKeys="none">
+                                            {TimeFrames.map((value) => (
+                                                <DropdownItem key={value} className='dark:text-white text-black' onClick={(e) => onTimeFrameChanged(value)}>{value}</DropdownItem>
                                             ))}
                                         </DropdownMenu>
                                     </Dropdown>
@@ -207,7 +209,7 @@ export default function Chart() {
                                             selectionMode="single"
                                             selectedKeys={"none"}>
                                             <DropdownItem key="Select" onClick={() => updateView(View.IndicatorSelection)} className='dark:text-white text-black'>Select</DropdownItem>
-                                            <DropdownItem key="Download" onClick={onDownloadIndicatorData} className='dark:text-white text-black'>Download</DropdownItem>
+                                            <DropdownItem key="Download" onClick={indicators.downloadCurrent} className='dark:text-white text-black'>Download</DropdownItem>
                                         </DropdownMenu>
                                     </Dropdown>
                                 </div>

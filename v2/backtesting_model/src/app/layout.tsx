@@ -10,7 +10,8 @@ import { Suspense } from 'react';
 import Nav from '@/components/navBar/navbar'
 import { useIndicators } from '@/lib/hooks/useIndicatorData'
 import { useMarkets } from '@/lib/hooks/useMarketData'
-
+import { Loader2 } from 'lucide-react'
+import { TimeFrames } from './chart/types'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -30,26 +31,35 @@ export default function RootLayout(properties: ParentComponentProperties) {
     });
 
     const marketSetup = markets.refresh().then(result => {
-      markets.select(result[0])
+      markets.selectMarket(result[0])
     });
 
-    Promise.all([indicatorSetup, marketSetup]).then(x => {
-      console.log(markets.current())
+    const timeFrameSetup = new Promise<void>(resolve => {
+      localStorage.setItem("selected_time_frame", TimeFrames[0].toString())
+      resolve();
+    })
+
+    Promise.all([indicatorSetup, marketSetup, timeFrameSetup]).then(x => {
       setLoading(false)
     })
 
   }, []);
 
   return (
-    <html lang="en" className=''>
+    <html lang="en" className='dark'>
       <body className={`sm:overflow-hidden overflow-y-auto ${inter.className}`}>
         <NextUIProvider>
           <main className="min-h-screen">
             {
               loading ? (
-                <>Loading</>
-              ) :
-                (<div className='w-full min-h-screen'>
+                <div className={'transition-all w-full min-h-screen dark:bg-stone-900 bg-stone-100'}>
+                  <div className='fixed top-1/2 -translate-x-1/2 -translate-y-1/2 left-1/2 justify-center'>
+                    <Loader2 className='mx-auto w-10 h-10 animate-spin text-black dark:text-white'></Loader2>
+                    <h1 className='pt-2 text-black dark:text-white align-middle text-center'>Loading...</h1>
+                  </div>
+                </div>
+              ) : (
+                <div className='w-full min-h-screen'>
                   <Nav>
                     <Suspense fallback={<div>Loading...</div>}>
                     </Suspense>
@@ -59,7 +69,8 @@ export default function RootLayout(properties: ParentComponentProperties) {
                       {properties.children}
                     </div>
                   </div>
-                </div>)
+                </div>
+              )
             }
           </main>
         </NextUIProvider>
