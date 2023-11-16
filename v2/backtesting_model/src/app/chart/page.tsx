@@ -13,21 +13,6 @@ import { TimeFrame, TimeFrames } from './types';
 import { DEFAULT_HORZ_SCALE_OPTIONS } from '@/components/chart';
 import { ChartReference } from '@/components/chart/types';
 
-//#region Chart Options
-
-const gridOptions: GridOptions = {
-    vertLines: {
-        color: '#44403c',
-        style: LineStyle.Solid,
-        visible: true
-    },
-    horzLines: {
-        color: '#44403c',
-        style: LineStyle.Solid,
-        visible: true
-    }
-}
-
 const initialData = [
     { time: '2018-12-22', value: 32.51 },
     { time: '2018-12-23', value: 31.11 },
@@ -40,8 +25,6 @@ const initialData = [
     { time: '2018-12-30', value: 22.68 },
     { time: '2018-12-31', value: 22.67 },
 ];
-
-//#endregion
 
 export default function Chart() {
     const indicators = useIndicators();
@@ -106,7 +89,6 @@ export default function Chart() {
     }
 
     function onChartVisibleRangeChanged(timeRange: Range<number>, id: number) {
-        console.log(timeRange)
         switch (id) {
             case priceChartRef.current.id?.():
                 indicatorChartRef.current.setVisibleTimeRange?.(timeRange);
@@ -135,14 +117,13 @@ export default function Chart() {
                 <div className='relative w-full h-full overflow-hidden'>
                     <div className='min-h-screen w-full max-h-screen'>
                         <div onMouseOver={(e) => console.log('hover')} className='w-full border-t border-stone-200' style={{ height: "69.75vh" }}>
-                            <ChartComponent id={0} reference={priceChartRef} data={initialData} grid={gridOptions} onCrosshairMoved={onCrosshairMoved} onVisibleRangeChanged={onChartVisibleRangeChanged} horzScale={horzScaleOptions} />
+                            <ChartComponent id={0} reference={priceChartRef} data={initialData} onCrosshairMoved={onCrosshairMoved} onVisibleRangeChanged={onChartVisibleRangeChanged} horzScale={horzScaleOptions} />
                         </div>
                         <div className='opacity-60 w-full dark:bg-stone-500' style={{ height: "0.5vh", boxShadow: "10px 10px" }} />
                         <div className='w-full' style={{ height: "29.75vh" }}>
-                            <ChartComponent id={1} reference={indicatorChartRef} data={initialData} grid={gridOptions} onCrosshairMoved={onCrosshairMoved} onVisibleRangeChanged={onChartVisibleRangeChanged} />
+                            <ChartComponent id={1} reference={indicatorChartRef} data={initialData} onCrosshairMoved={onCrosshairMoved} onVisibleRangeChanged={onChartVisibleRangeChanged} />
                         </div>
                     </div>
-                    {/* <div className='opacity-60 h-1 w-full absolute dark:bg-stone-500 z-10' style={{ bottom: "30vh" }} /> */}
                     <Selection title='Select Market' onConfirmed={onMarketChanged} reference={marketSelectRef} values={markets.all} />
                     <Selection title="Select Indicator" onConfirmed={onIndicatorChanged} reference={indicatorSelectRef} values={indicators.all} />
                 </div>
@@ -162,18 +143,18 @@ export default function Chart() {
 
                         {/* Market Options */}
                         <div className='w-full'>
-                            <h4 className='dark:text-white pb-2 text-sm text-black font-semibold'>Market Options</h4>
+                            <h4 className='dark:text-white  pb-4 text-sm text-black font-semibold'>Market Options</h4>
                             <div className='w-full p-4 border  border-stone-400 dark:border-stone-700 rounded-lg'>
                                 <div className='w-full'>
                                     <p className='dark:text-stone-500 pb-2 font-semibold text-xs text-stone-400'>Market:</p>
                                     <Dropdown>
                                         <div className='w-full flex flex-row'>
                                             <DropdownTrigger>
-                                                <Button variant="bordered" className="capitalize grow text-left justify-start">
+                                                <Button variant="bordered" className="border-1 border-stone-300 dark:border-stone-700 capitalize grow text-left justify-start">
                                                     {currentMarket?.name}
                                                 </Button>
                                             </DropdownTrigger>
-                                            <Button onClick={async () => onUploadMarket()} variant="bordered" className=" min-w-0 w-10 h-10 ml-2 p-3 capitalize">
+                                            <Button onClick={async () => onUploadMarket()} variant="bordered" className=" min-w-0 w-10 h-10 border-1 border-stone-300 dark:border-stone-700 ml-2 p-3 capitalize">
                                                 <Upload className='w-10 h-10' />
                                             </Button>
                                         </div>
@@ -192,7 +173,7 @@ export default function Chart() {
                                     <p className='dark:text-stone-500 pb-2 font-semibold text-xs text-stone-400'>Time Frame:</p>
                                     <Dropdown>
                                         <DropdownTrigger>
-                                            <Button variant="bordered" className="capitalize w-full">
+                                            <Button variant="bordered" className="capitalize w-full border-1 border-stone-300 dark:border-stone-700">
                                                 {currentTimeFrame}
                                             </Button>
                                         </DropdownTrigger>
@@ -203,7 +184,7 @@ export default function Chart() {
                                             selectionMode="single"
                                             selectedKeys="none">
                                             {TimeFrames.map((value) => (
-                                                <DropdownItem key={value} className='dark:text-white text-black' onClick={(e) => onTimeFrameChanged(value)}>{value}</DropdownItem>
+                                                <DropdownItem key={value} variant='flat' className='dark:text-white text-black' onClick={(e) => onTimeFrameChanged(value)}>{value}</DropdownItem>
                                             ))}
                                         </DropdownMenu>
                                     </Dropdown>
@@ -213,18 +194,18 @@ export default function Chart() {
 
                         {/* Indicator Options */}
                         <div className='w-full pt-10'>
-                            <h4 className='dark:text-white pb-2 text-sm text-black font-semibold'>Indicator Options</h4>
+                            <h4 className='dark:text-white pb-4 text-sm text-black font-semibold'>Indicator Options</h4>
                             <div className='w-full p-4 border border-stone-400 dark:border-stone-700 rounded-lg'>
                                 <div className='w-full'>
                                     <p className='dark:text-stone-500 pb-2 font-semibold text-xs text-stone-400'>Source:</p>
                                     <Dropdown>
                                         <div className='w-full flex flex-row'>
                                             <DropdownTrigger>
-                                                <Button variant="bordered" className="capitalize grow text-left justify-start">
+                                                <Button variant="bordered" className="border-1 border-stone-300 dark:border-stone-700 capitalize grow text-left justify-start">
                                                     {currentIndicator?.name}
                                                 </Button>
                                             </DropdownTrigger>
-                                            <Button onClick={async () => onUploadIndicator()} variant="bordered" className=" min-w-0 w-10 h-10 ml-2 p-3 capitalize">
+                                            <Button onClick={async () => onUploadIndicator()} variant="bordered" className="border-1 border-stone-300 dark:border-stone-700 min-w-0 w-10 h-10 ml-2 p-3 capitalize">
                                                 <Upload className='w-10 h-10' />
                                             </Button>
                                         </div>

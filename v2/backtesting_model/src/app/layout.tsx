@@ -12,6 +12,7 @@ import { useIndicators } from '@/lib/hooks/useIndicatorData'
 import { useMarkets } from '@/lib/hooks/useMarketData'
 import { Loader2 } from 'lucide-react'
 import { TimeFrames } from './chart/types'
+import { DARK_THEME, useTheme } from '@/lib/hooks/useTheme'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -24,6 +25,9 @@ export default function RootLayout(properties: ParentComponentProperties) {
   const [loading, setLoading] = useState(true);
   const indicators = useIndicators();
   const markets = useMarkets();
+  const theme = useTheme();
+  
+  localStorage.setItem("theme", JSON.stringify(DARK_THEME))
 
   useEffect(() => {
     const indicatorSetup = indicators.refresh().then(result => {
@@ -46,7 +50,7 @@ export default function RootLayout(properties: ParentComponentProperties) {
   }, []);
 
   return (
-    <html lang="en" className='dark'>
+    <html lang="en" className={theme.current().htmlClass}>
       <body className={`sm:overflow-hidden overflow-y-auto ${inter.className}`}>
         <NextUIProvider>
           <main className="min-h-screen">
