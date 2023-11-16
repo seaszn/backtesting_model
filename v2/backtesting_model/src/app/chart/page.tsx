@@ -2,7 +2,7 @@
 
 import React, { useRef, useState } from 'react';
 import ChartComponent from "@/components/chart";
-import { LayoutOptions, GridOptions, ColorType, LineStyle, Time } from 'lightweight-charts'
+import { LayoutOptions, GridOptions, ColorType, LineStyle, Time, HorzScaleOptions, Range, PriceScaleOptions, CrosshairLineOptions } from 'lightweight-charts'
 import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Button } from "@nextui-org/react";
 import { Upload } from 'lucide-react';
 import { open } from '@tauri-apps/api/dialog';
@@ -10,20 +10,10 @@ import Selection, { SelectReference } from '@/components/selector';
 import { IndicatorInfo, useIndicators } from '@/lib/hooks/useIndicatorData';
 import { MarketInfo, useMarkets } from '@/lib/hooks/useMarketData';
 import { TimeFrame, TimeFrames } from './types';
-
-export enum View {
-    Chart,
-    IndicatorSelection,
-    MarketSelection,
-}
+import { DEFAULT_HORZ_SCALE_OPTIONS } from '@/components/chart';
+import { ChartReference } from '@/components/chart/types';
 
 //#region Chart Options
-const layoutOptions: LayoutOptions = {
-    background: { type: ColorType.Solid, color: '#1c1917' },
-    textColor: 'white',
-    fontSize: 12,
-    fontFamily: '__Inter_e66fe9'
-}
 
 const gridOptions: GridOptions = {
     vertLines: {
@@ -61,8 +51,16 @@ export default function Chart() {
     const indicatorSelectRef = useRef<SelectReference>({})
     const marketSelectRef = useRef<SelectReference>({})
 
+    const priceChartRef = useRef<ChartReference>({})
+    const indicatorChartRef = useRef<ChartReference>({})
+
     const [currentIndicator, updateIndicator] = useState(indicators.current())
     const [currentMarket, updateMarket] = useState(markets.current())
+
+    const horzScaleOptions: HorzScaleOptions = {
+        ...DEFAULT_HORZ_SCALE_OPTIONS,
+        visible: false,
+    }
 
     function onIndicatorChanged(value: IndicatorInfo) {
         updateIndicator(value);
@@ -107,26 +105,51 @@ export default function Chart() {
         }
     }
 
+    function onChartVisibleRangeChanged(timeRange: Range<number>, id: number) {
+        console.log(timeRange)
+        switch (id) {
+            case priceChartRef.current.id?.():
+                indicatorChartRef.current.setVisibleTimeRange?.(timeRange);
+                break;
+            case indicatorChartRef.current.id?.():
+                priceChartRef.current.setVisibleTimeRange?.(timeRange);
+                break;
+        }
+    }
+
+    function onCrosshairMoved(value: number, time: Time, id: number) {
+        switch (id) {
+            case priceChartRef.current.id?.():
+                indicatorChartRef.current.setCrosshairPosition?.(0, time);
+                break;
+            case indicatorChartRef.current.id?.():
+                priceChartRef.current.setCrosshairPosition?.(0, time);
+                break;
+        }
+    }
+
     return (
         <div className='min-w-full min-h-screen sm:flex sm:flex-row'>
             {/* Middle Section */}
             <div className="w-full min-h-screen dark:bg-stone-900 bg-stone-100">
-                <div className='relative w-full h-full'>
+                <div className='relative w-full h-full overflow-hidden'>
                     <div className='min-h-screen w-full max-h-screen'>
-                        <div className='w-full' style={{ height: "50vh" }}>
-                            <ChartComponent data={initialData} grid={gridOptions} layout={layoutOptions} />
+                        <div onMouseOver={(e) => console.log('hover')} className='w-full border-t border-stone-200' style={{ height: "69.75vh" }}>
+                            <ChartComponent id={0} reference={priceChartRef} data={initialData} grid={gridOptions} onCrosshairMoved={onCrosshairMoved} onVisibleRangeChanged={onChartVisibleRangeChanged} horzScale={horzScaleOptions} />
                         </div>
-                        <div className='w-full' style={{ height: "50vh" }}>
-                            <ChartComponent data={initialData} grid={gridOptions} layout={layoutOptions} />
+                        <div className='opacity-60 w-full dark:bg-stone-500' style={{ height: "0.5vh", boxShadow: "10px 10px" }} />
+                        <div className='w-full' style={{ height: "29.75vh" }}>
+                            <ChartComponent id={1} reference={indicatorChartRef} data={initialData} grid={gridOptions} onCrosshairMoved={onCrosshairMoved} onVisibleRangeChanged={onChartVisibleRangeChanged} />
                         </div>
                     </div>
-                    <Selection title="Select Indicator" onConfirmed={onIndicatorChanged} reference={indicatorSelectRef} values={indicators.all} />
+                    {/* <div className='opacity-60 h-1 w-full absolute dark:bg-stone-500 z-10' style={{ bottom: "30vh" }} /> */}
                     <Selection title='Select Market' onConfirmed={onMarketChanged} reference={marketSelectRef} values={markets.all} />
+                    <Selection title="Select Indicator" onConfirmed={onIndicatorChanged} reference={indicatorSelectRef} values={indicators.all} />
                 </div>
             </div>
 
             {/* Control Panel */}
-            <div className='border-l w-full flex-col flex sm:w-72 p-4 justify-between sm:h-screen  border-stone-200 bg-stone-100 transition-all dark:border-stone-700 dark:bg-stone-900'>
+            <div className='sm:border-l w-full flex-col flex sm:w-72 p-4 justify-between sm:h-screen  border-stone-200 bg-stone-100 transition-all dark:border-stone-700 dark:bg-stone-900'>
                 <div className="grid gap-2 overflow-y-auto">
                     {/* Header */}
                     <div className="flex items-center space-x-2 rounded-lg px-2 py-1.5">
@@ -160,7 +183,7 @@ export default function Chart() {
                                             disallowEmptySelection
                                             selectionMode="single"
                                             selectedKeys={"none"}>
-                                            <DropdownItem key="Select" onClick={() => marketSelectRef.current.Open?.()} className='dark:text-white text-black'>Select</DropdownItem>
+                                            <DropdownItem key="Select" onClick={() => { indicatorSelectRef.current.Close?.(); marketSelectRef.current.Open?.() }} className='dark:text-white text-black'>Select</DropdownItem>
                                             <DropdownItem key="Download" onClick={markets.downloadCurrent} className='dark:text-white text-black'>Download</DropdownItem>
                                         </DropdownMenu>
                                     </Dropdown>
@@ -211,7 +234,10 @@ export default function Chart() {
                                             disallowEmptySelection
                                             selectionMode="single"
                                             selectedKeys={"none"}>
-                                            <DropdownItem key="Select" onClick={() => indicatorSelectRef.current.Open?.()} className='dark:text-white text-black'>Select</DropdownItem>
+                                            <DropdownItem key="Select" onClick={() => {
+                                                marketSelectRef.current.Close?.();
+                                                indicatorSelectRef.current.Open?.()
+                                            }} className='dark:text-white text-black'>Select</DropdownItem>
                                             <DropdownItem key="Download" onClick={indicators.downloadCurrent} className='dark:text-white text-black'>Download</DropdownItem>
                                         </DropdownMenu>
                                     </Dropdown>

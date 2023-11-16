@@ -2,8 +2,7 @@ import React from 'react';
 import {
     Button,
 } from "@nextui-org/react";
-import { Cross, X } from 'lucide-react';
-import { Console } from 'console';
+import { X } from 'lucide-react';
 
 export interface SelectReference {
     Open?: () => void
@@ -24,6 +23,7 @@ export default function Selection<T extends object>(properties: SelectionPropert
     const [isActive, setActive] = React.useState(properties.intialState ? properties.intialState : false);
 
     properties.reference.current.Open = Open;
+    properties.reference.current.Close = Close;
 
     function cancelSelection() {
         setActive(false);
@@ -46,10 +46,10 @@ export default function Selection<T extends object>(properties: SelectionPropert
         let result = properties.className != undefined ? properties.className : "";
 
         if (isActive) {
-            result += "w-full p-10"
+            result += "w-full p-10 blur-none"
         }
         else {
-            result += "w-0 p-10 px-0"
+            result += "w-0 p-10 px-0 blur-sm"
         }
 
         return result;
