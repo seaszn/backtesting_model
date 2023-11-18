@@ -19,6 +19,7 @@
     "autoprefixer": "10.4.15",
     "eslint": "8.47.0",
     "eslint-config-next": "13.4.17",
+    "is-valid-path": "^0.1.1",
     "lightweight-charts": "^4.1.1",
     "lucide-react": "^0.292.0",
     "next": "13.4.17",
@@ -31,6 +32,7 @@
   },
   "devDependencies": {
     "@tauri-apps/api": "^1.4.0",
-    "@tauri-apps/cli": "^1.5.6"
+    "@tauri-apps/cli": "^1.5.6",
+    "@types/is-valid-path": "^0.1.2"
   }
 }

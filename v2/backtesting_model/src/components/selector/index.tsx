@@ -56,7 +56,7 @@ export default function Selection<T extends object>(properties: SelectionPropert
     }
 
     return (
-        <div className={formatClassess() + ' transition-all absolute top-0 z-40 bg-stone-100 dark:bg-stone-900 h-full overflow-hidden'}>
+        <div className={formatClassess() + ' transition-all absolute top-0 z-20 bg-stone-100 dark:bg-stone-900 h-full overflow-hidden'}>
             <div className='flex w-full'>
                 <h3 className="my-auto min-w-max text-lg font-medium leading-6 text-black dark:text-white">
                     {properties.title}
@@ -72,9 +72,15 @@ export default function Selection<T extends object>(properties: SelectionPropert
                         <thead className='pb-2 border-b border-stone-200 dark:border-stone-700'>
                             <tr className='font-semibold text-black dark:text-white p-2'>
                                 {
-                                    Object.keys(properties.values[0]).map((value, index, source) => {
-                                        return (<td className='p-1'>{value.replace("_", " ")}</td>)
-                                    })
+                                    properties.values[0] == undefined ?
+                                        (
+                                            <></>
+                                        ) :
+                                        (
+                                            Object.keys(properties.values[0]).map((value, index, source) => {
+                                                return (<td  key={index} className='p-1'>{value.replace("_", " ")}</td>)
+                                            })
+                                        )
                                 }
                             </tr>
                         </thead>
@@ -82,7 +88,7 @@ export default function Selection<T extends object>(properties: SelectionPropert
                             {
                                 properties.values.map((value, index, source) => {
                                     return (
-                                        <tr className={selected == value ? "dark:active:bg-stone-800  dark:bg-stone-700 dark:text-white text-black bg-stone-300 text-sm my-4" : "" + 'cursor-pointer text-black text-sm transition-all dark:active:bg-stone-800 active:bg-stone-300 dark:text-white p-2 hover:bg-stone-200 dark:hover:bg-stone-700'} onClick={(e) => {
+                                        <tr key={index} className={selected == value ? "dark:active:bg-stone-800  dark:bg-stone-700 dark:text-white text-black bg-stone-300 text-sm my-4" : "" + 'cursor-pointer text-black text-sm transition-all dark:active:bg-stone-800 active:bg-stone-300 dark:text-white p-2 hover:bg-stone-200 dark:hover:bg-stone-700'} onClick={(e) => {
                                             if (selected == value) {
                                                 updateSelected(undefined)
                                             }
@@ -94,7 +100,7 @@ export default function Selection<T extends object>(properties: SelectionPropert
                                         }} >
                                             {
                                                 Object.values(value).map((x, i, s) => {
-                                                    return (<td className={'py-3 p-1'}>{x}</td>)
+                                                    return (<td key={i} className={'py-3 p-1'}>{x}</td>)
                                                 })
                                             }
                                         </tr>
@@ -116,13 +122,4 @@ export default function Selection<T extends object>(properties: SelectionPropert
             </div>
         </div>
     )
-}
-
-Selection.defaultProps = {
-    // isActive: 
-    reference: {
-        current: {
-            Open: undefined
-        }
-    }
 }

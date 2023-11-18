@@ -54,7 +54,7 @@ export const DEFAULT_HORZ_SCALE_OPTIONS = {
 }
 
 export const DEFAULT_CROSSHAIR_LINE_OPTIONS: CrosshairLineOptions = {
-    color: "#758696",
+    color: "#d6d3d1",
     labelBackgroundColor: 'white',
     width: 1,
     style: LineStyle.Dashed,
@@ -113,6 +113,17 @@ export default function ChartComponent(properties: ChartProperties) {
                 style: LineStyle.Solid,
                 visible: true
             }
+        },
+        crosshair: {
+            vertLine: {
+                ...DEFAULT_CROSSHAIR_LINE_OPTIONS,
+                color: theme.current()!.crosshair
+            },
+            horzLine: {
+                ...DEFAULT_CROSSHAIR_LINE_OPTIONS,
+                color: theme.current()!.crosshair
+            },
+            mode: DEFAULT_CHART_PROPERTIES.crosshair!.mode
         },
         layout: {
             ...DEFAULT_LAYOUT_OPTIONS,

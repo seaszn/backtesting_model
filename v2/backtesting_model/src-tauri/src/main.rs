@@ -2,25 +2,51 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use data_reader::*;
+use data_writer::write_data_set;
+use serde_json::json;
+
+use data_formatter::*;
+mod data_formatter;
 mod data_reader;
-mod data_scraper;
+mod data_writer;
+
+const INDEX_FILE_NAME: &str = "/_index.json";
 
 fn main() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![
-            on_load_market_data,
-            on_load_indicator_data,
-        ])
+        .invoke_handler(tauri::generate_handler![load_data_info, import_data_set,])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
 
 #[tauri::command]
-fn on_load_market_data() -> Vec<MarketInfo> {
-    return get_market_files();
+fn load_data_info(folder: &str) -> Vec<DataSetInfo> {
+    let raw_json = read_file_to_string(format!("{}/", folder) + INDEX_FILE_NAME);
+
+    if let Ok(result) = serde_json::from_str::<Vec<DataSetInfo>>(&raw_json) {
+        return result;
+    } else {
+        return vec![];
+    }
 }
 
-#[tauri::command]
-fn on_load_indicator_data() -> Vec<IndicatorInfo> {
-    return get_indicator_files();
+#[tauri::command(rename_all = "snake_case")]
+fn import_data_set(
+    name: String,
+    provider: String,
+    url: String,
+    store_path: String,
+    target_path: String,
+) -> Result<DataSetInfo, String> {
+    if let Ok(data_set_rows) = format_data_set(store_path) {
+        return write_data_set(
+            name,
+            provider,
+            url,
+            target_path,
+            json!(data_set_rows).to_string(),
+        );
+    } else {
+        return Err(String::from("Failed to format the file"));
+    }
 }

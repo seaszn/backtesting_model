@@ -8,11 +8,10 @@ import { ParentComponentProperties } from './types'
 import { NextUIProvider } from "@nextui-org/react";
 import { Suspense } from 'react';
 import Nav from '@/components/navBar/navbar'
-import { useIndicators } from '@/lib/hooks/useIndicatorData'
-import { useMarkets } from '@/lib/hooks/useMarketData'
 import { Loader2 } from 'lucide-react'
 import { TimeFrames } from './chart/types'
 import { DARK_THEME, useTheme } from '@/lib/hooks/useTheme'
+import { DataSetType, useDataSet } from '@/lib/hooks/useData'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -23,27 +22,26 @@ export const metadata: Metadata = {
 
 export default function RootLayout(properties: ParentComponentProperties) {
   const [loading, setLoading] = useState(true);
-  const indicators = useIndicators();
-  const markets = useMarkets();
+
+  const indicatorData = useDataSet(DataSetType.Indicators)
+  const marketData = useDataSet(DataSetType.Markets)
   const theme = useTheme();
-  
-  localStorage.setItem("theme", JSON.stringify(DARK_THEME))
 
   useEffect(() => {
-    const indicatorSetup = indicators.refresh().then(result => {
-      indicators.select(result[0])
-    });
+    const indicatorSetup = indicatorData.refresh().then(result => {
+      indicatorData.select_data_set(result[0]);
+    })
 
-    const marketSetup = markets.refresh().then(result => {
-      markets.select(result[0])
-    });
+    const marketSetup = marketData.refresh().then(result => {
+      marketData.select_data_set(result[0]);
+    })
 
     const timeFrameSetup = new Promise<void>(resolve => {
       localStorage.setItem("selected_time_frame", TimeFrames[0].toString())
       resolve();
     })
 
-    Promise.all([indicatorSetup, marketSetup, timeFrameSetup]).then(x => {
+    Promise.all([timeFrameSetup, indicatorSetup, marketSetup]).then(x => {
       setLoading(false)
     })
 

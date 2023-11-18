@@ -5,6 +5,7 @@ import { singletonHook } from "react-singleton-hook"
 
 export interface Theme {
     backgroundColor: string,
+    crosshair: string,
     gridColor: string,
     textColor: string,
     htmlClass: string,
@@ -12,6 +13,7 @@ export interface Theme {
 
 export const LIGHT_THEME: Theme = {
     backgroundColor: "#f5f5f4",
+    crosshair: "#1c1917",
     gridColor: "#e7e5e4",
     textColor: "#000000",
     htmlClass: ""
@@ -19,6 +21,7 @@ export const LIGHT_THEME: Theme = {
 
 export const DARK_THEME: Theme = {
     backgroundColor: '#1c1917',
+    crosshair: "#fffff4",
     gridColor: "#44403c",
     textColor: "#ffffff",
     htmlClass: "dark"
@@ -29,15 +32,17 @@ function select(theme: Theme) {
 }
 
 function current(): Theme {
-    const result = localStorage.getItem("theme")
 
-    if (result == null) {
-        select(DARK_THEME)
-        return DARK_THEME;
-    }
-    else {
-        return JSON.parse(result)!;
-    }
+    return DARK_THEME;
+    // const result = localStorage.getItem("theme")
+
+    // if (result == null) {
+    //     select(DARK_THEME)
+    //     return DARK_THEME;
+    // }
+    // else {
+    //     return JSON.parse(result)!;
+    // }
 }
 
 const initState = {

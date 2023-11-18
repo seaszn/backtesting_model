@@ -1,13 +1,15 @@
 use serde::{Serialize, Deserialize};
 
-#[derive(Serialize, Deserialize, Debug)]
-pub struct IndicatorInfo{
-    name: String,
-    url: String,
-    provider: String
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct DataSetInfo{
+    pub name: String,
+    pub url: String,
+    pub provider: String,
+    pub store_path: String
 }
 
-#[derive(Serialize, Deserialize, Debug)]
-pub struct MarketInfo{
-    name: String,
+impl PartialEq for DataSetInfo {
+    fn eq(&self, other: &Self) -> bool {
+        self.name == other.name && self.url == other.url && self.provider == other.provider && self.store_path == other.store_path
+    }
 }
