@@ -9,7 +9,7 @@ import Selection, { SelectReference } from "@/components/selector";
 import { ImportDataModal } from "@/components/importModal";
 import { DataSetType, useDataSet } from "@/lib/hooks/useData";
 import { DataSetInfo } from "@/lib/hooks/useData/types";
-import { ConfigurationWindow } from "@/components/toolbarWindows/configuration";
+import { ConfigurationWindow } from "@/components/toolbarWindows/config";
 
 enum ToolbarState {
     Collapsed = "",

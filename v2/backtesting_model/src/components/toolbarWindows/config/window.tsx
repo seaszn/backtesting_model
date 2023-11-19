@@ -3,26 +3,30 @@ import { ParentComponentProperties } from "@/app/types";
 import { useDataSet } from "@/lib/hooks/useData";
 import { DataSetInfo, DataSetType } from "@/lib/hooks/useData/types";
 import { Button, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger } from "@nextui-org/react";
-import { Upload, X } from "lucide-react";
+import { Download, Upload, X } from "lucide-react";
 import { useRef, useState } from "react";
 import { SubMenuTab } from "../../subMenu/subMenuTab";
 import { BaseMenuState, SubMenu, SubMenuReference } from "@/components/subMenu/subMenu";
-import { ConfigWindowMenu, ConfigSubMenuState } from "./menu";
+import { DataSetSelect } from "@/components/dataSetSelect";
+import { ImportDataSet } from "@/components/dataSetImport.tsx/dataSetImport";
 
-interface ConfigurationWindowProps {
-    currentMarket?: DataSetInfo
-    currentIndicator?: DataSetInfo
+interface ConfigWindowProps {
 }
 
-export function ConfigurationWindow(properties: ConfigurationWindowProps) {
+export enum ConfigSubMenuState {
+    UploadDataSet,
+    SelectMarket,
+    SelectIndicator,
+}
+
+export function ConfigWindow(properties: ConfigWindowProps) {
     const indicators = useDataSet(DataSetType.Indicators);
     const markets = useDataSet(DataSetType.Markets);
-
-    const menuRef = useRef<SubMenuReference<ConfigSubMenuState>>({})
 
     const [currentIndicator, updateIndicator] = useState(indicators.current())
     const [currentMarket, updateMarket] = useState(markets.current())
     const [currentTimeFrame, selectTimeFrame] = useState<TimeFrame>(localStorage.getItem("selected_time_frame")! as TimeFrame);
+    const [subMenuState, setSubMenuState] = useState<BaseMenuState | ConfigSubMenuState>(BaseMenuState.Collapsed)
 
     function onTimeFrameChanged(timeFrame: TimeFrame) {
         localStorage.setItem("selected_time_frame", timeFrame);
@@ -38,14 +42,13 @@ export function ConfigurationWindow(properties: ConfigurationWindowProps) {
                 <div className="flex flex-col h-full">
                     <div className="px-2 grow  grid gap-1">
                         <div className='w-full'>
-                            {/* <h4 className='dark:text-white  pb-4 text-sm text-black font-semibold'>Market Options</h4> */}
                             <div className='w-full'>
                                 <p className='dark:text-zinc-500 pb-1 font-semibold text-tiny text-zinc-400'>Market:</p>
                                 <div className='w-full flex flex-row'>
-                                    <Button variant="bordered" onClick={() => menuRef.current.setMenuState?.(ConfigSubMenuState.SelectMarket)} className="border-1 border-zinc-300 rounded-md dark:border-zinc-700 capitalize grow text-left justify-start">
+                                    <Button variant="bordered" onClick={() => setSubMenuState(ConfigSubMenuState.SelectMarket)} className="border-1 border-zinc-300 rounded-md dark:border-zinc-700 capitalize grow text-left justify-start">
                                         {currentMarket?.name}
                                     </Button>
-                                    <Button onClick={() => menuRef.current.setMenuState?.(ConfigSubMenuState.UploadDataSet)} variant="bordered" className=" rounded-md min-w-0 w-10 h-10 border-1 border-zinc-300 dark:border-zinc-700 ml-2 p-3 capitalize">
+                                    <Button onClick={() => setSubMenuState(ConfigSubMenuState.UploadDataSet)} variant="bordered" className=" rounded-md min-w-0 w-10 h-10 border-1 border-zinc-300 dark:border-zinc-700 ml-2 p-3 capitalize">
                                         <Upload className='w-10 h-10' />
                                     </Button>
                                 </div>
@@ -76,10 +79,10 @@ export function ConfigurationWindow(properties: ConfigurationWindowProps) {
                                 <div className='w-full'>
                                     <p className='dark:text-zinc-500 pb-2 font-semibold text-xs text-zinc-400'>Source:</p>
                                     <div className='w-full flex flex-row'>
-                                        <Button variant="bordered" onClick={() => menuRef.current.setMenuState?.(ConfigSubMenuState.SelectIndicator)} className="border-1 border-zinc-300 rounded-md dark:border-zinc-700 capitalize grow text-left justify-start">
+                                        <Button variant="bordered" onClick={() => setSubMenuState(ConfigSubMenuState.SelectIndicator)} className="border-1 border-zinc-300 rounded-md dark:border-zinc-700 capitalize grow text-left justify-start">
                                             {currentIndicator?.name}
                                         </Button>
-                                        <Button onClick={() => menuRef.current.setMenuState?.(ConfigSubMenuState.UploadDataSet)} variant="bordered" className=" rounded-md min-w-0 w-10 h-10 border-1 border-zinc-300 dark:border-zinc-700 ml-2 p-3 capitalize">
+                                        <Button onClick={() => setSubMenuState(ConfigSubMenuState.UploadDataSet)} variant="bordered" className=" rounded-md min-w-0 w-10 h-10 border-1 border-zinc-300 dark:border-zinc-700 ml-2 p-3 capitalize">
                                             <Upload className='w-10 h-10' />
                                         </Button>
                                     </div>
@@ -90,7 +93,30 @@ export function ConfigurationWindow(properties: ConfigurationWindowProps) {
                 </div>
             </div>
 
-            <ConfigWindowMenu reference={menuRef} />
+            <SubMenu state={subMenuState}>
+                <SubMenuTab title={"Select Market"} type={ConfigSubMenuState.SelectMarket} state={subMenuState} setSubMenuState={setSubMenuState}>
+                    <DataSetSelect type={DataSetType.Markets} />
+                </SubMenuTab>
+                <SubMenuTab title={"Select Indicator"} type={ConfigSubMenuState.SelectIndicator} state={subMenuState} setSubMenuState={setSubMenuState}>
+                    <DataSetSelect type={DataSetType.Indicators} />
+                </SubMenuTab>
+                <SubMenuTab title={"Upload Dataset"} type={ConfigSubMenuState.UploadDataSet} state={subMenuState} setSubMenuState={setSubMenuState}>
+                    <ImportDataSet onSuccess={(e, t) => {
+                        switch (t) {
+                            case DataSetType.Indicators:
+                                indicators.select_data_set(e);
+                                updateIndicator(e);
+                                setSubMenuState(BaseMenuState.Collapsed)
+                                break;
+                            case DataSetType.Markets:
+                                markets.select_data_set(e);
+                                updateMarket(e);
+                                setSubMenuState(BaseMenuState.Collapsed)
+                                break;
+                        }
+                    }} />
+                </SubMenuTab>
+            </SubMenu>
         </div>
     )
 }
