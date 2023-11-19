@@ -33,6 +33,12 @@ export function ConfigWindow(properties: ConfigWindowProps) {
         selectTimeFrame(timeFrame);
     }
 
+    function onMarketSelected(dataSet: DataSetInfo){
+        markets.select_data_set(dataSet);
+        updateMarket(dataSet);
+        // setSubMenuState(BaseMenuState.Collapsed);
+    }
+
     return (
         <div className="relative flex flex-col h-full">
             <div className="grow flex flex-col p-4">
@@ -95,10 +101,10 @@ export function ConfigWindow(properties: ConfigWindowProps) {
 
             <SubMenu state={subMenuState}>
                 <SubMenuTab title={"Select Market"} type={ConfigSubMenuState.SelectMarket} state={subMenuState} setSubMenuState={setSubMenuState}>
-                    <DataSetSelect type={DataSetType.Markets} />
+                    <DataSetSelect type={DataSetType.Markets} onSelect={onMarketSelected} dataSet={markets} />
                 </SubMenuTab>
                 <SubMenuTab title={"Select Indicator"} type={ConfigSubMenuState.SelectIndicator} state={subMenuState} setSubMenuState={setSubMenuState}>
-                    <DataSetSelect type={DataSetType.Indicators} />
+                    <DataSetSelect type={DataSetType.Indicators} dataSet={indicators}/>
                 </SubMenuTab>
                 <SubMenuTab title={"Upload Dataset"} type={ConfigSubMenuState.UploadDataSet} state={subMenuState} setSubMenuState={setSubMenuState}>
                     <ImportDataSet onSuccess={(e, t) => {

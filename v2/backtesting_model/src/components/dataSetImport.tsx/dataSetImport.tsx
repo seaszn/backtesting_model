@@ -154,7 +154,7 @@ export function ImportDataSet(properties: ImportDataSetProps) {
                         <p className={(filePath == "" ? "text-zinc-700 dark:text-zinc-300" : "dark:text-white text-black overflow-ellipsis") + " overflow-hidden whitespace-nowrap"}>{filePath == "" ? "Select dataset path..." : filePath}</p>
                     </div>
                     <Button onClick={(e) => chooseFilePath()} variant="bordered" className={(filePathError != "" ? "border-red-600 dark:border-red-700" : "border-zinc-300 dark:border-zinc-700 ") + " rounded-md min-w-0 w-8 h-8 border-1 bg-none ml-2 p-2 capitalize"}>
-                        <File className='w-8 h-8' />
+                        <Upload className='w-8 h-8' />
                     </Button>
                 </div>
             </div>
