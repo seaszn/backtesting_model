@@ -2,15 +2,14 @@
 
 import Link from "next/link";
 import {
-    ArrowLeft,
-    BarChart3,
-    Edit3,
+    AreaChartIcon,
+    CandlestickChart,
+    Cog,
     Globe,
-    Layout,
+    Globe2,
     LayoutDashboard,
-    Megaphone,
-    Menu,
-    Newspaper,
+    LayoutDashboardIcon,
+    LucideLayout,
     Settings,
 } from "lucide-react";
 import {
@@ -38,7 +37,7 @@ export default function Nav({ children }: { children: ReactNode }) {
     const segments = useSelectedLayoutSegments();
     const { id } = useParams() as { id?: string };
 
-    const [siteId, setSiteId] = useState<string | null>();
+    const [siteId] = useState<string | null>();
 
     const tabs = useMemo(() => {
         return [
@@ -46,19 +45,19 @@ export default function Nav({ children }: { children: ReactNode }) {
                 name: "Overview",
                 href: "/",
                 isActive: segments.length === 0,
-                icon: <LayoutDashboard width={18} />,
+                icon: <LucideLayout width={18} />,
             },
             {
                 name: "Chart",
                 href: "/chart",
                 isActive: segments[0] === "chart",
-                icon: <Globe width={18} />,
+                icon: <CandlestickChart width={18} />,
             },
             {
                 name: "Settings",
                 href: "/settings",
                 isActive: segments[0] === "settings",
-                icon: <Settings width={18} />,
+                icon: <Cog width={18} />,
             },
         ];
     }, [segments, id, siteId]);
@@ -73,26 +72,15 @@ export default function Nav({ children }: { children: ReactNode }) {
 
     return (
         <>
-            <button
-                className={`fixed z-50 text-black dark:text-white dark ${
-                    // left align for Editor, right align for other pages
-                    segments[0] === "post" && segments.length === 2 && !showSidebar
-                        ? "left-5 top-5"
-                        : "right-5 top-5"
-                    } sm:hidden`}
-                onClick={() => setShowSidebar(!showSidebar)}
-            >
-                <Menu width={20} />
-            </button>
             <div
                 className={`transform ${showSidebar ? "w-full translate-x-0" : "-translate-x-full"
-                    } fixed z-40 flex h-full flex-col justify-between border-r border-stone-200 bg-stone-100 p-4 transition-all dark:border-stone-700 dark:bg-stone-900 sm:w-60 sm:translate-x-0`}
+                    } fixed z-40 flex h-full flex-col justify-between border-r-4 border-zinc-200 bg-zinc-100 p-4 transition-all dark:border-zinc-700 dark:bg-zinc-900 w-60 translate-x-0`}
             >
                 <div className="grid gap-2">
                     <div className="flex items-center space-x-2 rounded-lg px-2 py-1.5">
                         <h1 className="font-semibold dark:text-white">Backtesting Model</h1>
                     </div>
-                    <div className="my-2 border-t border-stone-200 dark:border-stone-700" />
+                    <div className="my-2 border-t border-zinc-200 dark:border-zinc-700" />
 
 
 
@@ -101,8 +89,8 @@ export default function Nav({ children }: { children: ReactNode }) {
                             <Link
                                 key={name}
                                 href={href}
-                                className={`flex items-center space-x-3 ${isActive ? "bg-stone-200 text-black dark:bg-stone-700" : ""
-                                    } rounded-lg px-2 py-1.5 transition-all duration-150 ease-in-out hover:bg-stone-200 active:bg-stone-300 dark:text-white dark:hover:bg-stone-700 dark:active:bg-stone-800`}
+                                className={`flex items-center space-x-3 ${isActive ? "bg-zinc-200 text-black dark:bg-zinc-700" : ""
+                                    } rounded-lg px-2 py-1.5 transition-all duration-150 ease-in-out hover:bg-zinc-200 active:bg-zinc-300 dark:text-white dark:hover:bg-zinc-700 dark:active:bg-zinc-800`}
                             >
                                 {icon}
                                 <span className="text-sm font-medium">{name}</span>
@@ -118,7 +106,7 @@ export default function Nav({ children }: { children: ReactNode }) {
                                 href={href}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="flex items-center justify-between rounded-lg px-2 py-1.5 transition-all duration-150 ease-in-out hover:bg-stone-200 active:bg-stone-300 dark:text-white dark:hover:bg-stone-700 dark:active:bg-stone-800"
+                                className="flex items-center justify-between rounded-lg px-2 py-1.5 transition-all duration-150 ease-in-out hover:bg-zinc-200 active:bg-zinc-300 dark:text-white dark:hover:bg-zinc-700 dark:active:bg-zinc-800"
                             >
                                 <div className="flex items-center space-x-3">
                                     {icon}

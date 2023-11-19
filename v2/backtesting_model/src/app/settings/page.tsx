@@ -1,7 +1,7 @@
 'use client'
 
 
-import { LIGHT_THEME, useTheme } from "@/lib/hooks/useTheme"
+import { LIGHT_THEME, useTheme } from "@/lib/hooks/useTheme";
 import { Button } from "@nextui-org/react";
 
 export default function Chart() {

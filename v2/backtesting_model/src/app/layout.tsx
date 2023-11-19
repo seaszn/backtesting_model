@@ -7,11 +7,12 @@ import { Inter } from 'next/font/google'
 import { ParentComponentProperties } from './types'
 import { NextUIProvider } from "@nextui-org/react";
 import { Suspense } from 'react';
-import Nav from '@/components/navBar/navbar'
+import Nav from '@/components/navBar'
 import { Loader2 } from 'lucide-react'
 import { TimeFrames } from './chart/types'
-import { DARK_THEME, useTheme } from '@/lib/hooks/useTheme'
+// import { DARK_THEME, useTheme } from '@/lib/hooks/useTheme/useTheme'
 import { DataSetType, useDataSet } from '@/lib/hooks/useData'
+import { useTheme } from '@/lib/hooks/useTheme'
 
 const inter = Inter({ subsets: ['latin'] })
 

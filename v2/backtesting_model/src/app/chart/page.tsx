@@ -52,10 +52,10 @@ export default function Chart() {
 
     return (
         <div className='min-h-screen w-full max-h-screen'>
-            <div className='w-full border-t border-stone-200' style={{ height: "69.75vh" }}>
-                <ChartComponent id={0} reference={priceChartRef} data={initialData} onCrosshairMoved={onCrosshairMoved} onVisibleRangeChanged={onChartVisibleRangeChanged} horzScale={horzScaleOptions} />
+            <div className='w-full' style={{ height: "69.75vh" }}>
+               <ChartComponent id={0} reference={priceChartRef} data={initialData} onCrosshairMoved={onCrosshairMoved} onVisibleRangeChanged={onChartVisibleRangeChanged} horzScale={horzScaleOptions} />
             </div>
-            <div className='opacity-60 w-full dark:bg-stone-500' style={{ height: "0.5vh", boxShadow: "10px 10px" }} />
+            <div className='opacity-60 w-full dark:bg-zinc-700' style={{ height: "0.5vh"}} />
             <div className='w-full' style={{ height: "29.75vh" }}>
                 <ChartComponent id={1} reference={indicatorChartRef} data={initialData} onCrosshairMoved={onCrosshairMoved} onVisibleRangeChanged={onChartVisibleRangeChanged} />
             </div>

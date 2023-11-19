@@ -7,7 +7,7 @@ import { useState, Fragment } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { DataSetInfo, DataSetType } from "@/lib/hooks/useData/types";
 import { useDataSet } from "@/lib/hooks/useData";
-import { SelectReference } from "./selector";
+import { SelectReference } from "../selector";
 
 export interface DataModalProperties {
     type: DataSetType,
@@ -98,8 +98,8 @@ export function ImportDataModal(properties: DataModalProperties) {
     }
 
     return (<Transition appear show={isOpen} as={Fragment}>
-        <Dialog as="div" className="relative z-30" onClose={closeModal}>
-            <div className="fixed inset-0 bg-black/30 z-auto" aria-hidden="true" />
+        <Dialog as="div" className="relative z-20" onClose={closeModal}>
+            <div className="fixed inset-0 z-auto" aria-hidden="true" />
             <Transition.Child
                 as={Fragment}
                 enter="ease-out duration-300"
@@ -123,13 +123,13 @@ export function ImportDataModal(properties: DataModalProperties) {
                         leaveFrom="opacity-100 scale-100"
                         leaveTo="opacity-0 scale-95"
                     >
-                        <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-stone-100 dark:bg-stone-900 p-6 text-left align-middle shadow-xl transition-all">
+                        <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-zinc-100 dark:bg-zinc-900 p-6 text-left align-middle shadow-xl transition-all">
                             <Dialog.Title as="h3" className="text-lg font-medium leading-6 text-black dark:text-white">
                                 {properties.type == DataSetType.Markets ? "Import Market" : "Import Indicator"}
                             </Dialog.Title>
                             <div className="mx-auto max-w-xl mt-2">
                                 <div className="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2">
-                                    <div className="h-0 border-b w-full mt-4 col-span-2 border-b-stone-300 dark:border-b-stone-700"></div>
+                                    <div className="h-0 border-b w-full mt-4 col-span-2 border-b-zinc-300 dark:border-b-zinc-700"></div>
                                     <div className="col-span-2">
                                         <label className="text-black dark:text-white text-sm">
                                             Name:
@@ -142,7 +142,7 @@ export function ImportDataModal(properties: DataModalProperties) {
                                             id="name"
                                             placeholder= {`The ${properties.type.valueOf()} name...`}
                                             autoComplete="given-name"
-                                            className={(nameError != "" ? "border-red-600 dark:border-red-700" : "border-stone-300 dark:border-stone-700 ") + " rounded-lg mt-2 block w-full px-3.5 py-2 border-1 focus-visible:border-transparent focus-visible:dark:bg-stone-700 focus-visible:outline-none transition-all shadow-sm placeholder:text-stone-600 dark:placeholder:text-stone-400 dark:text-white bg-transparent sm:text-sm sm:leading-6"}
+                                            className={(nameError != "" ? "border-red-600 dark:border-red-700" : "border-zinc-300 dark:border-zinc-700 ") + " rounded-lg mt-2 block w-full px-3.5 py-2 border-1 focus-visible:border-transparent focus-visible:dark:bg-zinc-700 focus-visible:outline-none transition-all shadow-sm placeholder:text-zinc-600 dark:placeholder:text-zinc-400 dark:text-white bg-transparent sm:text-sm sm:leading-6"}
                                         />
                                         <label className=" w-full text-sm text-red-600 dark:text-red-700" hidden={nameError == ""}>{nameError}</label>
                                     </div>
@@ -160,10 +160,10 @@ export function ImportDataModal(properties: DataModalProperties) {
                                                 id="path"
                                                 placeholder="Choose file path.."
                                                 autoComplete="given-name"
-                                                className={(filePathError != "" && filePath != "" ? "border-red-600 dark:border-red-700" : "border-stone-300 dark:border-stone-700 border-none ") + " mr-4 block w-full px-3.5 py-2 border-b focus-visible:border-transparent focus-visible:dark:bg-stone-700 focus-visible:outline-none transition-all shadow-sm placeholder:text-stone-600 dark:placeholder:text-stone-400 dark:text-white bg-transparent sm:text-sm sm:leading-6"}
+                                                className={(filePathError != "" && filePath != "" ? "border-red-600 dark:border-red-700" : "border-zinc-300 dark:border-zinc-700 border-none ") + " mr-4 block w-full px-3.5 py-2 border-b focus-visible:border-transparent focus-visible:dark:bg-zinc-700 focus-visible:outline-none transition-all shadow-sm placeholder:text-zinc-600 dark:placeholder:text-zinc-400 dark:text-white bg-transparent sm:text-sm sm:leading-6"}
                                             />
 
-                                            <Button onClick={(e) => chooseFilePath()} variant="bordered" className={(filePathError != "" ? "border-red-600 dark:border-red-700" : "border-stone-300 dark:border-stone-700 ") + " rounded-lg min-w-0 w-10 h-10 border-1 bg-none ml-2 p-3 capitalize"}>
+                                            <Button onClick={(e) => chooseFilePath()} variant="bordered" className={(filePathError != "" ? "border-red-600 dark:border-red-700" : "border-zinc-300 dark:border-zinc-700 ") + " rounded-lg min-w-0 w-10 h-10 border-1 bg-none ml-2 p-3 capitalize"}>
                                                 <File className='w-10 h-10' />
                                             </Button>
                                         </div>
@@ -182,10 +182,10 @@ export function ImportDataModal(properties: DataModalProperties) {
                                                 id="provider"
                                                 placeholder="The provider's name..."
                                                 autoComplete="given-name"
-                                                className={(providerError != "" ? "border-red-600 dark:border-red-700" : "border-stone-300 dark:border-stone-700 ") + " rounded-lg mt-2 block w-full px-3.5 py-2 border-1 focus-visible:border-transparent focus-visible:dark:bg-stone-700 focus-visible:outline-none transition-all shadow-sm placeholder:text-stone-600 dark:placeholder:text-stone-400 dark:text-white bg-transparent sm:text-sm sm:leading-6"}
+                                                className={(providerError != "" ? "border-red-600 dark:border-red-700" : "border-zinc-300 dark:border-zinc-700 ") + " rounded-lg mt-2 block w-full px-3.5 py-2 border-1 focus-visible:border-transparent focus-visible:dark:bg-zinc-700 focus-visible:outline-none transition-all shadow-sm placeholder:text-zinc-600 dark:placeholder:text-zinc-400 dark:text-white bg-transparent sm:text-sm sm:leading-6"}
                                             />
                                         </div>
-                                        <label className=" w-full text-sm text-red-600 dark:text-red-700" hidden={providerError == ""}>{providerError}</label>
+                                        <label className=" bg-zinc w-full text-sm text-red-600 dark:text-red-700" hidden={providerError == ""}>{providerError}</label>
                                     </div>
                                     <div >
                                         <label className="text-black dark:text-white text-sm">
@@ -200,7 +200,7 @@ export function ImportDataModal(properties: DataModalProperties) {
                                                 id="url"
                                                 placeholder={`The ${properties.type.valueOf()}'s url...`}
                                                 autoComplete="given-name"
-                                                className={(urlError != "" ? "border-red-600 dark:border-red-700" : "border-stone-300 dark:border-stone-700 ") + " rounded-lg mt-2 block w-full px-3.5 py-2 border-1 focus-visible:border-transparent focus-visible:dark:bg-stone-700 focus-visible:outline-none transition-all shadow-sm placeholder:text-stone-600 dark:placeholder:text-stone-400 dark:text-white bg-transparent sm:text-sm sm:leading-6"}
+                                                className={(urlError != "" ? "border-red-600 dark:border-red-700" : "border-zinc-300 dark:border-zinc-700 ") + " rounded-lg mt-2 block w-full px-3.5 py-2 border-1 focus-visible:border-transparent focus-visible:dark:bg-zinc-700 focus-visible:outline-none transition-all shadow-sm placeholder:text-zinc-600 dark:placeholder:text-zinc-400 dark:text-white bg-transparent sm:text-sm sm:leading-6"}
                                             />
                                         </div>
                                         <label className=" w-full text-sm text-red-600 dark:text-red-700" hidden={urlError == ""}>{urlError}</label>

@@ -20,9 +20,9 @@ export const LIGHT_THEME: Theme = {
 }
 
 export const DARK_THEME: Theme = {
-    backgroundColor: '#1c1917',
-    crosshair: "#fffff4",
-    gridColor: "#44403c",
+    backgroundColor: '#18181c',
+    crosshair: "#d4d4d8",
+    gridColor: "#3f3f46",
     textColor: "#ffffff",
     htmlClass: "dark"
 }
