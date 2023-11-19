@@ -21,13 +21,14 @@ export function DataSetSelect(properties: DataSetSelectProps) {
                 {
                     dataSet.values.map((value, index, source) => {
                         return (
-                            <div key={index} onClick={() => setSelected(value)} className={(selected == value ? "dark:active:bg-zinc-800 dark:bg-zinc-700 dark:text-white text-black bg-zinc-300 text-xs" : "") + ' px-2 cursor-pointer text-black transition-all dark:active:bg-zinc-800 active:bg-zinc-300 dark:text-white p-2 hover:bg-zinc-200 dark:hover:bg-zinc-800 border-b border-zinc-200 dark:border-zinc-700 text-xs grid grid-cols-2'}>
+                            <div onClick={() => setSelected(value)} className={(selected == value ? "dark:active:bg-zinc-800 dark:bg-zinc-700 dark:text-white text-black bg-zinc-300 text-xs" : "") + ' px-2 cursor-pointer text-black transition-all dark:active:bg-zinc-800 active:bg-zinc-300 dark:text-white p-2 hover:bg-zinc-200 dark:hover:bg-zinc-800 border-b border-zinc-200 dark:border-zinc-700 text-xs grid grid-cols-2'}>
                                 <p className=''>{value.name}</p>
                                 <p className='text-end'>{value.provider}</p>
                             </div>
                         )
                     })
                 }
+            
             </div>
         </div>
     )

@@ -74,9 +74,7 @@ export default function ChartLayout(properties: ParentComponentProperties) {
                 <div className={'z-30 transition-all bg-zinc-100 dark:bg-zinc-900 hidden sm:flex flex-col overflow-hidden justify-between h-screen ' + (toolbarState == ToolbarState.Collapsed ? "w-0 p-0" : " w-80")}>
                     {
                         {
-                            'configuration': <ConfigurationWindow
-                                currentIndicator={currentIndicator}
-                                currentMarket={currentMarket}/>,
+                            'configuration': <ConfigurationWindow/>,
                             // 'analytics': <Bar />
                         }[toolbarState.valueOf()]
                     }

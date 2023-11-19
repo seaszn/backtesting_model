@@ -124,7 +124,7 @@ export function ImportDataSet(properties: ImportDataSetProps) {
     }
 
     return (
-        <div className="grid border-t pt-4 grid-cols-1 gap-x-4 gap-y-2 mt-2 border-zinc-300 dark:border-zinc-700 sm:grid-cols-2">
+        <div className="grid border-t overflow-y-auto pb-2 pt-4 grid-cols-1 gap-x-4 gap-y-2 mt-2 border-zinc-300 dark:border-zinc-700 sm:grid-cols-2">
             <div className="col-span-2 text-xs">
                 <div className="w-full h-auto flex">
                     <label className="text-zinc-300 grow font-semibold dark:text-zinc-600">
@@ -153,7 +153,7 @@ export function ImportDataSet(properties: ImportDataSetProps) {
                     <div style={{ textOverflow: "clip" }} className={(filePathError != "" ? "border-red-600 dark:border-red-700" : "border-zinc-300 dark:border-zinc-700 ") + " overflow-hidden rounded-md px-2 mtblock w-full p-1 border-1 focus-visible:border-transparent focus-visible:dark:bg-zinc-700 focus-visible:outline-none transition-all shadow-sm placeholder:text-zinc-600 dark:placeholder:text-zinc-400 dark:text-white bg-transparent sm:leading-6"}>
                         <p className={(filePath == "" ? "text-zinc-700 dark:text-zinc-300" : "dark:text-white text-black overflow-ellipsis") + " overflow-hidden whitespace-nowrap"}>{filePath == "" ? "Select dataset path..." : filePath}</p>
                     </div>
-                    <Button onClick={(e) => chooseFilePath()} variant="bordered" className={(filePathError != "" ? "border-red-600 dark:border-red-700" : "border-zinc-300 dark:border-zinc-700 ") + " rounded-md min-w-0 w-8 h-8 border-1 bg-none ml-2 mx-1 p-2 capitalize"}>
+                    <Button onClick={(e) => chooseFilePath()} variant="bordered" className={(filePathError != "" ? "border-red-600 dark:border-red-700" : "border-zinc-300 dark:border-zinc-700 ") + " rounded-md min-w-0 w-8 h-8 border-1 bg-none ml-2 p-2 capitalize"}>
                         <File className='w-8 h-8' />
                     </Button>
                 </div>

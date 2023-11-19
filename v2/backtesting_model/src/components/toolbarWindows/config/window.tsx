@@ -6,7 +6,7 @@ import { Button, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger } from "@
 import { Download, Upload, X } from "lucide-react";
 import { useRef, useState } from "react";
 import { SubMenuTab } from "../../subMenu/subMenuTab";
-import { BaseMenuState, SubMenu, SubMenuReference } from "@/components/subMenu/subMenu";
+import { BaseMenuState, SubMenu } from "@/components/subMenu/subMenu";
 import { DataSetSelect } from "@/components/dataSetSelect";
 import { ImportDataSet } from "@/components/dataSetImport.tsx/dataSetImport";
 
@@ -35,11 +35,11 @@ export function ConfigWindow(properties: ConfigWindowProps) {
 
     return (
         <div className="relative flex flex-col h-full">
-            <div className="grow p-4">
+            <div className="grow flex flex-col p-4">
                 <div className="items-center border-b pb-4 px-2 mb-4 pt-1.5 border-zinc-200 dark:border-zinc-700">
                     <h1 className="font-semibold dark:text-white">Settings</h1>
                 </div>
-                <div className="flex flex-col h-full">
+                <div className="flex flex-col overflow-y-auto h-full">
                     <div className="px-2 grow  grid gap-1">
                         <div className='w-full'>
                             <div className='w-full'>
