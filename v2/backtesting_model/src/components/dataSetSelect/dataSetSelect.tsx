@@ -12,6 +12,15 @@ interface DataSetSelectProps {
 export function DataSetSelect(properties: DataSetSelectProps) {
     const [selected, setSelected] = useState(properties.dataSet.current());
 
+    function equalDataSet(first: DataSetInfo, second: DataSetInfo){
+        const name = first.name == second.name;
+        const provider = first.provider == second.provider;
+        const store_path = first.store_path == second.store_path;
+        const url = first.url == second.url;
+
+        return name && provider && store_path && url
+    }
+
     return (
         <div className="h-full w-full flex flex-col">
             <div className="w-full font-semibold border-b text-xs px-2 border-zinc-200 dark:border-zinc-700 text-zinc-300 dark:text-zinc-600 grid grid-cols-2">
@@ -22,10 +31,10 @@ export function DataSetSelect(properties: DataSetSelectProps) {
                 {
                     properties.dataSet.values.map((value, index, source) => {
                         return (
-                            <div onClick={() => {
+                            <div key={index} onClick={() => {
                                 setSelected(value)
                                 properties.onSelect?.(value)
-                            }} className={(selected == value ? "dark:active:bg-zinc-800 dark:bg-zinc-700 dark:text-white text-black bg-zinc-300 text-xs" : "") + ' px-2 cursor-pointer text-black transition-all dark:active:bg-zinc-800 active:bg-zinc-300 dark:text-white p-2 hover:bg-zinc-200 dark:hover:bg-zinc-800 border-b border-zinc-200 dark:border-zinc-700 text-xs grid grid-cols-2'}>
+                            }} className={(equalDataSet(selected!, value) ? "dark:active:bg-zinc-800 dark:bg-zinc-700 dark:text-white text-black bg-zinc-300 text-xs" : "") + ' px-2 cursor-pointer text-black transition-all dark:active:bg-zinc-800 active:bg-zinc-300 dark:text-white p-2 hover:bg-zinc-200 dark:hover:bg-zinc-800 border-b border-zinc-200 dark:border-zinc-700 text-xs grid grid-cols-2'}>
                                 <p className=''>{value.name}</p>
                                 <p className='text-end'>{value.provider}</p>
                             </div>

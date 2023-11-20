@@ -4,7 +4,7 @@ import { useDataSet } from "@/lib/hooks/useData";
 import { DataSetInfo, DataSetType } from "@/lib/hooks/useData/types";
 import { Button, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger } from "@nextui-org/react";
 import { Download, Upload, X } from "lucide-react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { SubMenuTab } from "../../subMenu/subMenuTab";
 import { BaseMenuState, SubMenu } from "@/components/subMenu/subMenu";
 import { DataSetSelect } from "@/components/dataSetSelect";
@@ -33,10 +33,14 @@ export function ConfigWindow(properties: ConfigWindowProps) {
         selectTimeFrame(timeFrame);
     }
 
-    function onMarketSelected(dataSet: DataSetInfo){
+    function onMarketSelected(dataSet: DataSetInfo) {
         markets.select_data_set(dataSet);
         updateMarket(dataSet);
-        // setSubMenuState(BaseMenuState.Collapsed);
+    }
+
+    function onIdicatorSelected(dataSet: DataSetInfo) {
+        indicators.select_data_set(dataSet);
+        updateIndicator(dataSet);
     }
 
     return (
@@ -104,7 +108,7 @@ export function ConfigWindow(properties: ConfigWindowProps) {
                     <DataSetSelect type={DataSetType.Markets} onSelect={onMarketSelected} dataSet={markets} />
                 </SubMenuTab>
                 <SubMenuTab title={"Select Indicator"} type={ConfigSubMenuState.SelectIndicator} state={subMenuState} setSubMenuState={setSubMenuState}>
-                    <DataSetSelect type={DataSetType.Indicators} dataSet={indicators}/>
+                    <DataSetSelect type={DataSetType.Indicators} onSelect={onIdicatorSelected} dataSet={indicators} />
                 </SubMenuTab>
                 <SubMenuTab title={"Upload Dataset"} type={ConfigSubMenuState.UploadDataSet} state={subMenuState} setSubMenuState={setSubMenuState}>
                     <ImportDataSet onSuccess={(e, t) => {
