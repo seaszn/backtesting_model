@@ -13,7 +13,8 @@ export type TimeSeries = { time: string, value: number }[]
 export interface ChartReference {
     setVisibleTimeRange?: (range: Range<number>) => void,
     setCrosshairPosition?: (price: number, horizontalPosition: Time) => void,
-    id?: () => number
+    id?: () => number,
+    forceResize?: () => void
 }
 
 export interface ChartProperties {

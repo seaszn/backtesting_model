@@ -18,12 +18,23 @@
         "confirm": true,
         "message": true,
         "open": true,
-        "save": true 
+        "save": true
+      },
+      "window": {
+        "all": false,
+        "close": true,
+        "hide": true,
+        "show": true,
+        "maximize": true,
+        "minimize": true,
+        "unmaximize": true,
+        "unminimize": true,
+        "startDragging": true
       }
     },
     "bundle": {
       "active": true,
-      "category": "DeveloperTool",
+      "category": "Productivity",
       "copyright": "",
       "deb": {
         "depends": []
@@ -62,10 +73,12 @@
     },
     "windows": [
       {
+        "decorations": false,
         "fullscreen": false,
         "height": 600,
+        "minWidth": 500,
         "resizable": true,
-        "title": "Freesonax",
+        "title": "Backtesting Model",
         "width": 800
       }
     ]

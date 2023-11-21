@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import ChartComponent from "@/components/chart";
 import { Time, HorzScaleOptions, Range } from 'lightweight-charts'
 import { DEFAULT_HORZ_SCALE_OPTIONS } from '@/components/chart';
@@ -22,6 +22,23 @@ const initialData = [
 export default function Chart() {
     const priceChartRef = useRef<ChartReference>({})
     const indicatorChartRef = useRef<ChartReference>({})
+    const windowRef = useRef<any>();
+
+    useEffect(() => {
+        if (windowRef.current) {
+            const resizeObserver = new ResizeObserver(() => {
+                priceChartRef.current.forceResize?.();
+                indicatorChartRef.current.forceResize?.();
+
+                console.log([windowRef.current.clientWidth, windowRef.current.clientHeight])
+            });
+            resizeObserver.observe(windowRef.current)
+
+            return () => {
+                resizeObserver.disconnect();
+            };
+        }
+    }, [windowRef])
 
     const horzScaleOptions: HorzScaleOptions = {
         ...DEFAULT_HORZ_SCALE_OPTIONS,
@@ -51,14 +68,21 @@ export default function Chart() {
     }
 
     return (
-        <div className='min-h-screen w-full max-h-screen'>
-            <div className='w-full' style={{ height: "69.75vh" }}>
-               <ChartComponent id={0} reference={priceChartRef} data={initialData} onCrosshairMoved={onCrosshairMoved} onVisibleRangeChanged={onChartVisibleRangeChanged} horzScale={horzScaleOptions} />
+        <div className='grow flex flex-col m-2' ref={windowRef}>
+            <div className='flex h-2/3 overflow-hidden'>
+                <ChartComponent id={0} reference={priceChartRef} data={initialData} onCrosshairMoved={onCrosshairMoved} onVisibleRangeChanged={onChartVisibleRangeChanged} horzScale={horzScaleOptions} />
             </div>
-            <div className='opacity-60 w-full dark:bg-zinc-700' style={{ height: "0.5vh"}} />
-            <div className='w-full' style={{ height: "29.75vh" }}>
+            <div className='grow flex '>
                 <ChartComponent id={1} reference={indicatorChartRef} data={initialData} onCrosshairMoved={onCrosshairMoved} onVisibleRangeChanged={onChartVisibleRangeChanged} />
             </div>
+
+            {/* <div className='grow flex bg-blue-500 ' style={{ height: "69.75vh" }}> */}
+            {/* <ChartComponent id={0} reference={priceChartRef} data={initialData} onCrosshairMoved={onCrosshairMoved} onVisibleRangeChanged={onChartVisibleRangeChanged} horzScale={horzScaleOptions} /> */}
+            {/* </div> */}
+
+            {/* <div className='w-full dark:bg-zinc-700' style={{ height: "0.5vh" }} />
+            <div className='w-full' style={{ height: "29.75vh" }}>
+            </div> */}
         </div>
     )
 }

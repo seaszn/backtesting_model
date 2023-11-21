@@ -2,6 +2,67 @@
 @tailwind components;
 @tailwind utilities;
 
+/* width */
+::-webkit-scrollbar {
+  width: 0.25rem;
+
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: none;
+  border-radius: 10px;
+}
+
+
+::-webkit-scrollbar-thumb {
+  background: #3f3f46 !important;
+  border-radius: 10px;
+}
+
+.titlebar {
+  height: 30px;
+  background:  rgb(244 244 245 / var(--tw-bg-opacity));
+  user-select: none;
+  display: flex;
+  justify-content: flex-end;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  cursor: default;
+}
+
+.titlebar :dark {
+  height: 30px;
+  background: rgb(24 24 27 / var(--tw-bg-opacity));
+  user-select: none;
+  display: flex;
+  justify-content: space-between;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  cursor: default;
+}
+
+.titlebar-button {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: 3rem;
+  height: 100%;
+  flex-grow: 1;
+  transition: none;
+  overflow: hidden;
+  cursor: default;
+   /*  dark:text-white w-12 */
+}
+
+.titlebar-button:hover{
+  cursor: default;
+}
+
 :root {
   --foreground-rgb: 0, 0, 0;
   --background-start-rgb: 214, 219, 220;
@@ -28,7 +89,3 @@ body {
   height: 100;
   padding: 6rem;
 }
-
-/* tr.spaceUnder>td {
-  padding-bottom: 1em;
-} */

@@ -5,6 +5,7 @@ import { TimeSeries, ChartReference, ChartProperties } from './types';
 // import { useTheme } from '@/lib/hooks/useTheme/useTheme';
 import { Button } from '@nextui-org/react';
 import { DARK_THEME, useTheme } from '@/lib/hooks/useTheme';
+import { Divide, Eye, Pencil, Upload } from 'lucide-react';
 
 export const DEFAULT_GRID_OPTIONS: GridOptions = {
     vertLines: {
@@ -86,6 +87,7 @@ export const DEFAULT_CHART_PROPERTIES: ChartProperties = {
 
 export default function ChartComponent(properties: ChartProperties) {
     const chartContainerRef = useRef<any>();
+    const containerRef = useRef<any>();
     const theme = useTheme();
 
     const [autoScale, setAutoScale] = useState(true);
@@ -144,18 +146,20 @@ export default function ChartComponent(properties: ChartProperties) {
         }
     }
 
+
     useEffect(() => {
-        const handleResize = () => {
-            if (chartContainerRef.current) {
-                chart.resize(chartContainerRef.current.clientWidth, chartContainerRef.current.clientHeight)
-            }
-        };
+        // const handleResize = () => {
+        //     if (chartContainerRef.current) {
+        //         chart.resize(chartContainerRef.current.clientWidth, chartContainerRef.current.clientHeight)
+        //     }
+        // };
+
+        // properties.reference!.current.forceResize = handleResize;
 
         const chart = createChart(chartContainerRef.current, {
             layout: merged_properties.layout,
             grid: merged_properties.grid,
             timeScale: merged_properties.horzScale,
-            width: chartContainerRef.current.clientWidth,
             height: chartContainerRef.current.clientHeight,
             crosshair: merged_properties.crosshair,
             rightPriceScale: merged_properties.priceScale
@@ -214,7 +218,7 @@ export default function ChartComponent(properties: ChartProperties) {
         }
 
         const resizeObserver = new ResizeObserver(() => {
-            handleResize();
+            // handleResize();
         });
         resizeObserver.observe(chartContainerRef.current);
 
@@ -233,16 +237,20 @@ export default function ChartComponent(properties: ChartProperties) {
     );
 
     return (
-        <div className='w-full relative' style={{ height: "100%" }} ref={chartContainerRef} >
-            <div className='z-10 bottom-0 absolute right-0 flex'>
-                <Button className={(autoScale ? "dark:bg-stone-300 bg-stone-700 text-white dark:text-black" : "") + ' p-0 min-w-1 w-5 h-5 rounded-md mb-3 mr-1 min-h-8 hover:bg-stone-700 dark:hover:bg-stone-300 hover:text-white dark:hover:text-black '} onClick={(e) => toggleAutoScale()}>
-                    A
-                </Button>
-                <Button className={(logScale ? "dark:bg-stone-300 bg-stone-700 text-white dark:text-black" : "") + ' p-0 min-w-1 w-5 h-5 rounded-md mb-3 mr-2 min-h-8 hover:bg-stone-700 dark:hover:bg-stone-300 hover:text-white dark:hover:text-black '} onClick={(e) => toggleLogScale()}>
-                    L
-                </Button>
+        <div className='flex grow '>
+            <div className='relative grow' style={{ width: "auto", height: "100%" }} ref={chartContainerRef} >
+                <div className='z-10 bottom-0 absolute right-0 flex'>
+                    <Button className={(autoScale ? "dark:bg-zinc-300 bg-zinc-700 text-white dark:text-black" : "") + ' p-0 min-w-1 w-5 h-5 rounded-md mb-3 mr-1 min-h-8 hover:bg-zinc-700 dark:hover:bg-zinc-300 hover:text-white dark:hover:text-black '} onClick={(e) => toggleAutoScale()}>
+                        A
+                    </Button>
+                    <Button className={(logScale ? "dark:bg-zinc-300 bg-zinc-700 text-white dark:text-black" : "") + ' p-0 min-w-1 w-5 h-5 rounded-md mb-3 mr-2 min-h-8 hover:bg-zinc-700 dark:hover:bg-zinc-300 hover:text-white dark:hover:text-black '} onClick={(e) => toggleLogScale()}>
+                        L
+                    </Button>
+                </div>
             </div>
+
         </div>
+
     );
 }
 

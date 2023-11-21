@@ -1,6 +1,6 @@
 import { ParentComponentProperties } from "@/app/types";
 import { Resizable } from "re-resizable";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export interface SubMenuProperties<T> extends ParentComponentProperties {
     state: BaseMenuState | T
@@ -22,7 +22,7 @@ export function SubMenu<T>(properties: SubMenuProperties<T>) {
 
     function getStateClassess() {
         if (properties.state == BaseMenuState.Collapsed)
-            return "h-0"
+            return "h-0 "
         else
             return "h-full overflow-hidden";
     }
@@ -31,7 +31,7 @@ export function SubMenu<T>(properties: SubMenuProperties<T>) {
         <Resizable
             className={"p-0 " + getStateClassess() + getResizeClassess()}
             maxHeight={properties.state == BaseMenuState.Collapsed ? "0px" : "50%"}
-            minHeight={properties.state == BaseMenuState.Collapsed ? "0px" : "10%"}
+            minHeight={properties.state == BaseMenuState.Collapsed ? "0px" : "65px"}
             maxWidth={"100%"}
             minWidth={"100%"}
             onResizeStart={() => setResizing(true)}
@@ -46,10 +46,9 @@ export function SubMenu<T>(properties: SubMenuProperties<T>) {
                 bottom: false,
                 right: false
             }}>
-            <div className={"relative transition-all h-full justify-end justify-self-end border-zinc-200 dark:border-zinc-700 w-full " + (properties.state == BaseMenuState.Collapsed ? "p-0 border-0" : "p-4 border-t-4")}>
+            <div className={"transition-all h-full justify-end justify-self-end border-zinc-200 dark:border-zinc-700 w-full " + (properties.state == BaseMenuState.Collapsed ? "p-0 border-0" : "p-4 border-t-4")}>
                 {properties.children}
             </div>
         </Resizable>
-
     )
 }
