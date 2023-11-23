@@ -1,8 +1,5 @@
 import { X } from "lucide-react"
-import { TabHandleReference } from "./types"
-import { MutableRefObject, useEffect, useRef, useState } from "react"
-import { title } from "process"
-import { useRendererState } from "@/lib/hooks/useRendererState"
+import { Link } from "@nextui-org/react"
 
 export interface ToolbarTabProps {
     allowClose: boolean,
@@ -18,8 +15,6 @@ export interface ToolbarTabProps {
 
 
 export function TabHandle(properties: ToolbarTabProps) {
-    const renderer = useRendererState(properties.id);
-
     const nextHover = properties.index + 1 == properties.hoverIndex;
     const nextSelected = (properties.index + 1) == properties.selectedIndex;
 
@@ -101,14 +96,14 @@ export function TabHandle(properties: ToolbarTabProps) {
     }
 
     return (
-        <li className={`relative h-full bg-zinc-700 flex`}>
+        <div className={`relative h-full bg-zinc-700 flex`}>
             <div className={`absolute h-2 w-2 top-0 left-0 ${topLeftColor}`} />
             <div className={`absolute h-2 w-2 top-0 right-0 ${topRightColor}`} />
             <div className={`absolute h-2 w-2 bottom-0 left-0 ${bottomLeftColor}`} />
             <div className={`absolute h-2  w-2 bottom-0 right-0 ${bottomRightColor}`} />
             <div onMouseLeave={properties.onHoverExit} onMouseEnter={() => properties.onHoverEnter()} className={` cursor-default w-60 h-full border-l-zinc-400 my-auto dark:border-l-zinc-600 z-10 rounded-b-md  text-xs font-semibold ${background} dark:text-white rounded-t-md flex`}>
                 <button onClick={() => properties.onSelect(properties.id)} className="grow overflow-hidden p-1 cursor-default whitespace-nowrap">
-                    <p className=" ml-1 my-auto text-left">{" { Tab name }"}</p>
+                    <p className=" ml-1 my-auto text-left">{"{ Tab name }"}</p>
                 </button>
                 {
                     properties.allowClose ? (
@@ -120,6 +115,6 @@ export function TabHandle(properties: ToolbarTabProps) {
                     )
                 }
             </div>
-        </li>
+        </div>
     )
 }
