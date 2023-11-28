@@ -1,4 +1,3 @@
-import { Dashboard } from "@/app/dashboard/[id]";
 import { invoke } from "@tauri-apps/api/tauri";
 import { stat } from "fs";
 import { useEffect, useState } from "react";

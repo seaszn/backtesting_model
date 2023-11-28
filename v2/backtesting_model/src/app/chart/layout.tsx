@@ -4,7 +4,7 @@ import { Button, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, toIterat
 import { ParentComponentProperties } from "../types";
 import { BarChart2, Cog, Upload } from "lucide-react";
 import { useRef, useState, Fragment, MutableRefObject } from "react";
-import { TimeFrame, TimeFrames } from "./types";
+import { TimeFrame, TIME_FRAMES } from "./types";
 import { DataSetType, useDataSet } from "@/lib/hooks/useData";
 import { DataSetInfo } from "@/lib/hooks/useData/types";
 // import { ConfigurationWindow } from "@/components/_toolbarWindows/config";

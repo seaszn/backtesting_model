@@ -77,7 +77,7 @@ export function TabMenu(properties: TabMenuProps) {
     }
 
     return (
-        <div className='flex justify-evenly h-8'>
+        <div className='flex justify-evenly h-9'>
             {
                 handleIds.map((handleId, i) => {
                     return <TabHandle
@@ -96,10 +96,10 @@ export function TabMenu(properties: TabMenuProps) {
             }
             {
                 properties.allowAddWindow == true ? (
-                    <div className={`relative grow h-8 w-8 ${lastSelected || lastHover ? " rounded-bl-md" : " rounded-bl-none"}`}>
+                    <div className={`relative grow my-auto h-8 w-8 ${lastSelected || lastHover ? " rounded-bl-md" : " rounded-bl-none"}`}>
                         <div className={` absolute h-2 w-2 bottom-0 left-0 z-0 ${lastSelected ? "bg-zinc-100 dark:bg-zinc-900" : (lastHover ? "bg-zinc-200 dark:bg-zinc-800" : "bg-zinc-300 dark:bg-zinc-700")}`} />
                         <div className={` absolute h-8 w-8 bg-zinc-300 dark:bg-zinc-700  p-1  ${lastHover || lastSelected ? "rounded-bl-md" : "rounded-bl-none"}`}>
-                            <button onClick={() => openWindow()} className=" cursor-default my-auto text-xs  font-semibold rounded-full hover:bg-zinc-800 text-zinc-500 dark:hover:text-white hover:text-black px-1 h-6 w-6">
+                            <button onClick={() => openWindow()} className=" cursor-default my-auto  text-xs  font-semibold rounded-full hover:bg-zinc-800 text-zinc-500 dark:hover:text-white hover:text-black px-1 h-6 w-6">
                                 <Plus className='w-4 h-4 p-0 m-0' />
                             </button>
                         </div>

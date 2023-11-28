@@ -4,7 +4,7 @@ import { Button, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, Switch }
 import { ChevronDownIcon, File, Upload } from "lucide-react";
 import { open } from "@tauri-apps/api/dialog";
 import { Fragment, useEffect, useState } from "react";
-import { TimeFrames } from "@/app/chart/types";
+import { TIME_FRAMES } from "@/app/chart/types";
 import { Menu, Transition } from "@headlessui/react";
 
 export interface ImportDataSetProps {

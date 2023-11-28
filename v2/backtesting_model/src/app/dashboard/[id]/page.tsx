@@ -1,12 +1,17 @@
 'use client'
 
-import { ChartReference } from "@/components/chart/types";
-import { LayoutBuilder } from "@/components/layoutBuilder";
-import { useChart } from "@/lib/hooks/useChart";
+import { ChartRenderer } from "@/components/chartRenderer";
 import { useDashboard } from "@/lib/hooks/useDashboard";
-import { HorzScaleOptions, Range, Time } from "lightweight-charts";
-import { useEffect, useRef } from "react"
+import { Range, Time } from "lightweight-charts";
+import { useState } from "react"
 import { DashboardProperties } from "./types";
+import { Eye, PlusCircle, Search, Terminal, User, X, } from "lucide-react";
+import { Divider, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger } from "@nextui-org/react";
+import { IconButton } from "@/components/iconButton";
+import { S4 } from "@/lib/guid";
+import { BacktestConfig } from "./menus/backtestConfig";
+import { Dialog } from "@headlessui/react";
+import { ModalProvider } from "@/lib/hooks/useModal/modalContext";
 
 const initialData = [
     { time: '2018-12-22', value: 32.51 },
@@ -23,35 +28,77 @@ const initialData = [
 
 export default function DashboardPage(properties: DashboardProperties) {
     const dashboard = useDashboard(properties.params.id)
-    // const f = useChart();
 
+    const [rightMenuOpen, setRightMenuOpen] = useState(false);
 
-    function onChartVisibleRangeChanged(timeRange: Range<number>, id: number) {
+    function onRightMenuStateChanged(open: boolean) {
+        setRightMenuOpen(open);
+    }
+
+    function onChartVisibleRangeChanged(timeRange: Range<number>, id: string) {
         // switch (id) {
-            // case priceChartRef.current.id?.():
-            //     indicatorChartRef.current.setVisibleTimeRange?.(timeRange);
-            //     break;
-            // case priceChartRef.current.id?.():
-            //     priceChartRef.current.setVisibleTimeRange?.(timeRange);
-            //     break;
+        // case priceChartRef.current.id?.():
+        //     indicatorChartRef.current.setVisibleTimeRange?.(timeRange);
+        //     break;
+        // case priceChartRef.current.id?.():
+        //     priceChartRef.current.setVisibleTimeRange?.(timeRange);
+        //     break;
         // }
     }
 
-    function onCrosshairMoved(value: number, time: Time, id: number) {
-    //     switch (id) {
-    //         case priceChartRef.current.id?.():
-    //             indicatorChartRef.current.setCrosshairPosition?.(0, time);
-    //             break;
-    //         case indicatorChartRef.current.id?.():
-    //             priceChartRef.current.setCrosshairPosition?.(0, time);
-    //             break;
-    //     }
+    function onCrosshairMoved(value: number, time: Time, id: string) {
+        //     switch (id) {
+        //         case priceChartRef.current.id?.():
+        //             indicatorChartRef.current.setCrosshairPosition?.(0, time);
+        //             break;
+        //         case indicatorChartRef.current.id?.():
+        //             priceChartRef.current.setCrosshairPosition?.(0, time);
+        //             break;
+        //     }
     }
 
     return (
-        <div className="w-full min-h-screen bg-red-500" >
-            <LayoutBuilder/>
-                {/* <ChartRenderer reference={priceChartRef} data={initialData} onCrosshairMoved={onCrosshairMoved} onVisibleRangeChanged={onChartVisibleRangeChanged} /> */}
-        </div>
+        <ModalProvider>
+            <div className="grid gap-1 w-full h-full relative  pb-10" style={{ gridTemplateRows: "2rem 1fr" }}>
+                <div className="grid grid-cols-2 gap-1 bg-zinc-100 dark:bg-zinc-900" style={{ gridTemplateColumns: "3rem 1fr" }}>
+                    <Dropdown className="rounded-md p-0 text-black dark:text-white">
+                        <DropdownTrigger>
+                            <button className={`m-0.5 h-7 grow enabled:hover:bg-zinc-300 enabled:active:bg-zinc-100 enabled:dark:hover:bg-zinc-700 enabled:dark:active:bg-zinc-800 rounded-md`}>
+                                <div className='w-6 h-6 mx-auto bg-blue-500 rounded-full '>
+                                    <User className="p-0.5 stroke-1 w-6 h-6 mx-auto my-auto" />
+                                </div>
+                            </button>
+                        </DropdownTrigger>
+                        <DropdownMenu aria-label="Static Actions" className="bg-zinc-800 overflow-hidden p-0 rounded-md border-none outline-none">
+                            <DropdownItem className="hover:bg-zinc-300 bg-zinc-200 dark:hover:bg-zinc-700 dark:bg-zinc-800 rounded-none m-0" key="preferences">Preferences</DropdownItem>
+                            <DropdownItem className="hover:bg-zinc-300 bg-zinc-200 dark:hover:bg-zinc-700 dark:bg-zinc-800 rounded-none m-0" key="quit">Quit</DropdownItem>
+                        </DropdownMenu>
+                    </Dropdown>
+                    <div className="h-full w-full flex">
+                        <IconButton className="h-7 w-7 m-0.5" icon={<PlusCircle className="stroke-1 h-5 w-5 mx-auto" />} />
+                        <IconButton className="h-7 w-7 m-0.5" icon={<Search className="stroke-1 h-5 w-5 mx-auto" />} />
+                        <Divider orientation="vertical" className="my-1 h-auto m-2 dark:bg-zinc-700 bg-zinc-300 " />
+                    </div>
+                </div>
+                <div className="grid gap-1 relative grid-cols-3 overflow-hidden max-h-full mb-8 w-full h-full" style={{ gridTemplateColumns: `3rem 1fr ${rightMenuOpen ? "20rem" : "3rem"}` }}>
+                    <div className="block dark:bg-zinc-900 text-black dark:text-white p-2 bg-zinc-100 rounded-tr-md" >
+                        <IconButton icon={<Terminal style={{ strokeWidth: '1px' }} className="h-auto w-auto" />} />
+                        <IconButton icon={<Eye style={{ strokeWidth: '1px' }} className="h-auto w-auto" />} />
+                    </div>
+                    <div className="block overflow-hidden rounded-t-md" >
+                        <ChartRenderer onCrosshairMoved={onCrosshairMoved} onVisibleRangeChanged={onChartVisibleRangeChanged} data={initialData} id={S4() + S4()} />
+                    </div>
+                    <div className="block text-xs dark:bg-zinc-900 text-black dark:text-white bg-zinc-100 rounded-tl-md" >
+                        <div className="grid grid-cols-2 h-full w-full" style={{ gridTemplateColumns: `${rightMenuOpen ? "17rem 3rem" : ""}` }}>
+                            <BacktestConfig open={rightMenuOpen} />
+                            <div className="p-2 border-l border-zinc-300 dark:border-zinc-700">
+                                <IconButton onClick={() => onRightMenuStateChanged(!rightMenuOpen)} icon={<Terminal style={{ strokeWidth: '1px' }} className="h-auto w-auto" />} />
+                                <IconButton icon={<Eye style={{ strokeWidth: '1px' }} className="h-auto w-auto" />} />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </ModalProvider>
     )
 }

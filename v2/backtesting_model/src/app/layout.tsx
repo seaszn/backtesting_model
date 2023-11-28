@@ -1,23 +1,28 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState, useContext } from 'react'
 import './globals.css'
-// import '/node_modules/react-grid-layout/css/styles.css'
-// /node_modules/react-resizable/css/styles.css
-// import 'react-grid-layout/css/styles.css'
 import 'react-resizable/css/styles.css'
+import * as ReactDOM from 'react-dom';
 
 import { Inter } from 'next/font/google'
 import { ParentComponentProperties } from './types'
-import { NextUIProvider, Tab } from "@nextui-org/react";
+import { NextUIProvider } from "@nextui-org/react";
 import { useTheme } from '@/lib/hooks/useTheme'
 import { TabMenu } from '@/components/tabMenu'
 import { ShellButtons } from '@/components/shell'
-import { Session, useSession } from '@/lib/hooks/useSession'
+import { useSession } from '@/lib/hooks/useSession'
 import { useRouter } from 'next/navigation'
-// import { Dashboard } from './dashboard/[id]'
+import { ModalContext, ModalProvider } from '@/lib/hooks/useModal/modalContext';
 
 const inter = Inter({ subsets: ['latin'] })
+
+Object.defineProperty(String.prototype, 'capitalize', {
+  value: function () {
+    return this.charAt(0).toUpperCase() + this.slice(1);
+  },
+  enumerable: false
+});
 
 export default function RootLayout(properties: ParentComponentProperties) {
   const theme = useTheme();
@@ -44,15 +49,16 @@ export default function RootLayout(properties: ParentComponentProperties) {
 
   return (
     <html lang="en" className={theme.current().htmlClass + (theme.current().htmlClass == "" ? " light-scrollbar" : " dark-scrollbar")}>
-      <body className={`sm:overflow-hidden dark:bg-zinc-900 ${inter.className}`}>
+      <body className={` bg-zinc-900 overflow-hidden ${inter.className}`}>
         <NextUIProvider>
-          <div className='w-full border-b border-b-zinc-300 dark:border-b-zinc-700 h-9 bg-zinc-100 dark:bg-zinc-900'>
-            <div data-tauri-drag-region className="bg-zinc-100 h-8 dark:bg-zinc-700 flex justify-between whitespace-nowrap">
+          <div className='w-full overflow-hidden h-9 bg-zinc-100 '>
+            <div data-tauri-drag-region className="bg-zinc-100 h-9 dark:bg-zinc-700 flex justify-between whitespace-nowrap">
               <TabMenu initialTabs={getDashboardHandles()} allowAddWindow={true} onSelectionChanged={onHandleChanged} onTabsChanged={onPageHandlesChanged} />
               <ShellButtons />
             </div>
           </div>
-          <main className="min-h-screen w-full bg-zinc-100 text-black dark:text-white dark:bg-zinc-900">
+          <div className='bg-zinc-100 dark:bg-zinc-900 border-zinc-300 dark:border-zinc-700 border-b w-full h-1'></div>
+          <main className="h-screen relative overflow-hidden w-full bg-zinc-300 text-black dark:text-white dark:bg-zinc-700">
             {properties.children}
           </main>
         </NextUIProvider>
