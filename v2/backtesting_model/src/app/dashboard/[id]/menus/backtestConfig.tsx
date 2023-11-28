@@ -1,5 +1,5 @@
 import { TIME_FRAMES, TimeFrame } from "@/app/chart/types";
-import { FuncValueDropdown } from "@/components/funcValueDropdown";
+import { FUNC_VALUES, FuncValueDropdown } from "@/components/funcValueDropdown";
 import { ModalContext } from "@/lib/hooks/useModal/modalContext";
 import { DateSelectModal } from "@/lib/modals/dateSelectModal";
 import { Dropdown, DropdownItem, DropdownMenu, DropdownTrigger } from "@nextui-org/react";
@@ -11,11 +11,17 @@ interface BacktestConfigProperties {
 
 type SignalType = "Inside / Outside" | "Above / Below"
 
-const SIGNAL_TYPES: SignalType[] = ["Inside / Outside", "Above / Below"]
+const SIGNAL_TYPES: SignalType[] = ["Above / Below", "Inside / Outside"]
 
 export function BacktestConfig(properties: BacktestConfigProperties) {
     const [timeFrame, setTimeFrame] = useState<TimeFrame>(TIME_FRAMES[0])
+    const [startDate, setStartDate] = useState(new Date())
+    const [endDate, setEndDate] = useState(new Date())
     const [signalType, setSignalType] = useState(SIGNAL_TYPES[0])
+    const [primaryValue, setPrimaryValue] = useState(FUNC_VALUES[0])
+    const [secundaryValue, setSecundaryValue] = useState(FUNC_VALUES[0])
+    const [invertSignal, setInvertSignal] = useState(false)
+
     const { updateModal } = useContext(ModalContext);
 
     function updateTimeFrame(timeFrame: TimeFrame) {
@@ -24,6 +30,20 @@ export function BacktestConfig(properties: BacktestConfigProperties) {
 
     function onSignalTypeChanged(type: SignalType) {
         setSignalType(type);
+    }
+
+    function onStartDateChanged(date: Date) {
+        setStartDate(date);
+        closeModal();
+    }
+
+    function onEndDateChanged(date: Date) {
+        setEndDate(date);
+        closeModal();
+    }
+
+    function closeModal() {
+        updateModal?.();
     }
 
     return (
@@ -133,14 +153,14 @@ export function BacktestConfig(properties: BacktestConfigProperties) {
                                 updateModal?.({
                                     backdrop: false,
                                     closeOnClickOutside: true,
-                                    content: <DateSelectModal minDate={new Date(2018, 0, 1)} />,
+                                    content: <DateSelectModal onCancel={closeModal} onConfirm={onStartDateChanged} value={startDate} minDate={new Date(2018, 0, 1)} />,
                                     title: "Start Date",
                                     allowClose: true
                                 });
                             }} className="border-b h-8 overflow-hidden rounded-sm  border-zinc-300 dark:border-zinc-700 hover:bg-zinc-300 dark:hover:bg-zinc-700">
                                 <div className="w-full p-2 text-right h-full">
                                     <label className=" border-zinc-300 dark:border-zinc-700 hover:bg-zinc-300 py-2 dark:hover:bg-zinc-700  font-semibold text-right">
-                                        11-26-2023
+                                        {`${startDate.getMonth() + 1}-${startDate.getDate()}-${startDate.getFullYear()}`}
                                     </label>
                                 </div>
                             </button>
@@ -151,10 +171,18 @@ export function BacktestConfig(properties: BacktestConfigProperties) {
                     <div className="w-full ">
                         <div className="grid grid-cols-2">
                             <label className="my-auto pl-2">End date</label>
-                            <button className="border-b h-8 overflow-hidden rounded-sm  border-zinc-300 dark:border-zinc-700 hover:bg-zinc-300 dark:hover:bg-zinc-700">
+                            <button onClick={() => {
+                                updateModal?.({
+                                    backdrop: false,
+                                    closeOnClickOutside: true,
+                                    content: <DateSelectModal onCancel={closeModal} onConfirm={onEndDateChanged} value={endDate} minDate={new Date(2018, 0, 1)} />,
+                                    title: "End Date",
+                                    allowClose: true
+                                });
+                            }} className="border-b h-8 overflow-hidden rounded-sm  border-zinc-300 dark:border-zinc-700 hover:bg-zinc-300 dark:hover:bg-zinc-700">
                                 <div className="w-full p-2 text-right h-full">
                                     <label className=" border-zinc-300 dark:border-zinc-700 hover:bg-zinc-300 py-2 dark:hover:bg-zinc-700  font-semibold text-right">
-                                        11-26-2023
+                                        {`${endDate.getMonth() + 1}-${endDate.getDate()}-${endDate.getFullYear()}`}
                                     </label>
                                 </div>
                             </button>
@@ -163,7 +191,7 @@ export function BacktestConfig(properties: BacktestConfigProperties) {
                 </div>
             </div>
 
-            {/* Bullish Section */}
+            {/* State Section */}
             <div className="mt-10">
                 <div>
                     <div className="w-full px-2 grid-cols-2 grid h-6 dark:border-zinc-700 border-zinc-300 border-b">
@@ -213,18 +241,30 @@ export function BacktestConfig(properties: BacktestConfigProperties) {
                 <div className="h-8 w-full rounded-sm">
                     <div className="w-full">
                         <div className="grid grid-cols-2">
-                            <label className="my-auto pl-2">Value</label>
-                            <FuncValueDropdown />
+                            <label className="my-auto pl-2">{signalType == "Inside / Outside" ? "Min Value" : "Value"}</label>
+                            <FuncValueDropdown value={primaryValue} onValueChanged={(e) => setPrimaryValue(e)} />
                         </div>
                     </div>
                 </div>
+                {
+                    signalType == "Inside / Outside" ? (
+                        <div className="h-8 w-full rounded-sm">
+                            <div className="w-full">
+                                <div className="grid grid-cols-2">
+                                    <label className="my-auto pl-2">Max Value</label>
+                                    <FuncValueDropdown value={secundaryValue} onValueChanged={(e) => setSecundaryValue(e)} />
+                                </div>
+                            </div>
+                        </div>
+                    ) : null
+                }
                 <div className="h-8 w-full rounded-sm">
                     <div className="w-full">
                         <div className="grid grid-cols-2">
                             <label className="my-auto pl-2">Invert signal</label>
                             <div className="border-b h-8 overflow-hidden rounded-sm  border-zinc-300 dark:border-zinc-700 ">
                                 <div className="w-full p-2 text-right h-full">
-                                    <input type='checkbox' className="w-8 h-8 rounded-sm checked:bg-blue-600 bg-zinc-700" />
+                                    <input type='checkbox' readOnly checked={invertSignal} onClick={() => setInvertSignal(!invertSignal)} className="w-8 h-8 rounded-sm checked:bg-blue-600 bg-zinc-700" />
                                 </div>
                             </div>
                         </div>

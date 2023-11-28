@@ -3,10 +3,11 @@ import { X } from "lucide-react";
 import { useState } from "react"
 
 type FuncValue = "mean" | "median" | "mode" | number
-const funcValues: FuncValue[] = ["mean", "median", "mode"]
+export const FUNC_VALUES: FuncValue[] = ["mean", "median", "mode"]
 
 interface FuncValueDropdown {
-    onValueChanged?: (value: string) => void
+    onValueChanged?: (value: FuncValue) => void
+    value?: FuncValue
 }
 
 function capitalize(input: string) {
@@ -17,10 +18,11 @@ export function FuncValueDropdown(properties: FuncValueDropdown) {
     const [isFocussed, setFocussed] = useState(false);
     const [isHovererd, setHovered] = useState(false);
     const [isCustomized, setCustomized] = useState(false);
-    const [value, setValue] = useState<FuncValue>(funcValues[0]);
+    const [value, setValue] = useState<FuncValue>(properties.value || FUNC_VALUES[0]);
 
     function onValueChanged(value: FuncValue) {
         setValue(value);
+        properties.onValueChanged?.(value);
     }
 
     function onCustomClicked() {
@@ -29,7 +31,7 @@ export function FuncValueDropdown(properties: FuncValueDropdown) {
     }
 
     function isFuncValue(input: string | number): input is FuncValue {
-        for (var func in funcValues) {
+        for (var func in FUNC_VALUES) {
             if (input == func) {
                 return true;
             }
@@ -43,12 +45,13 @@ export function FuncValueDropdown(properties: FuncValueDropdown) {
             <div className={`overflow-hidden relative border-b w-full h-full pr-2 border-zinc-300 dark:border-zinc-700 ${isFocussed || isHovererd ? "bg-zinc-300 dark:bg-zinc-700" : "bg-zinc-100 dark:bg-zinc-900"}`}>
                 <div onClick={() => {
                     setCustomized(false);
-                    setValue(funcValues[0])
+                    onValueChanged(FUNC_VALUES[0])
                 }} className="absolute rounded-full top-1/2 -translate-y-1/2 h-4 w-4 hover:bg-zinc-300 dark:hover:bg-zinc-700  z-20 my-auto">
                     <X strokeWidth={"1px"} className="my-auto relative h-4 w-4" />
                 </div>
                 <input
-                    type="text"
+                    type="number"
+                    step="0.01"
                     value={value}
                     onMouseEnter={() => {
                         setHovered(true)
@@ -63,20 +66,18 @@ export function FuncValueDropdown(properties: FuncValueDropdown) {
                         setFocussed(false);
                     }}
                     onChange={(e) => {
-                        if(e.currentTarget.value == ""){
-                            setValue(0)
-                        }
-                        else{
+                        if (e.currentTarget.value != "") {
                             const parsed = parseFloat(e.currentTarget.value)
-                            
+
                             if (!isNaN(parsed)) {
-                                setValue(parsed);
+                                onValueChanged(parsed)
                             }
                             else if (isFuncValue(e.currentTarget.value)) {
-                                setValue(e.currentTarget.value);
+                                onValueChanged(e.currentTarget.value);
                             }
                         }
                     }}
+                    style={{}}
                     className=" relative w-full h-full min-w-0 border-collapse outline-none bg-zinc-100 dark:bg-zinc-900 py-2 hover:bg-zinc-300 focus:dark:bg-zinc-700 focus:bg-zinc-300 dark:hover:bg-zinc-700 text-right"
                 />
             </div>
@@ -99,7 +100,7 @@ export function FuncValueDropdown(properties: FuncValueDropdown) {
                 </div>
                 <DropdownMenu closeOnSelect={true} disableAnimation={true} aria-label="Static Actions" aria-selected={false} className="bg-zinc-800 overflow-hidden p-0 rounded-md border-none outline-none">
                     {[
-                        ...funcValues.map(x => {
+                        ...FUNC_VALUES.map(x => {
                             return (
                                 <DropdownItem onClick={() => onValueChanged(x)}
                                     className="hover:bg-zinc-300 bg-zinc-200 dark:hover:bg-zinc-700 dark:bg-zinc-800 rounded-none m-0"
@@ -111,7 +112,7 @@ export function FuncValueDropdown(properties: FuncValueDropdown) {
                         <DropdownItem onClick={onCustomClicked}
                             className="hover:bg-zinc-300 text-xs bg-zinc-200 dark:hover:bg-zinc-700 dark:bg-zinc-800 rounded-none m-0"
                             key={"custom"}
-                            style={{fontSize: "10px"}}>
+                            style={{ fontSize: "10px" }}>
                             Custom
                         </DropdownItem>
                     ]}

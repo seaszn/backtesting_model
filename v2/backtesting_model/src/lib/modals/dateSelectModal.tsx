@@ -4,7 +4,6 @@ import { useState } from 'react'
 
 const MONTHS = ['January', "Februari", 'March', "April", "May", "June", 'July', "August", 'September', "October", "November", "December"]
 const WEEK_DAYS = ['Mon', "Tue", 'Wen', "Thu", "Fri", "Sat", "Sun"]
-const UNIX_DAY = 86400000
 
 enum Mode {
     Month = 0,
@@ -23,7 +22,10 @@ function getNumericArray(length: number) {
 
 interface DateSelectProps {
     minDate: Date,
-    maxDate?: Date
+    maxDate?: Date,
+    value?: Date,
+    onConfirm?: (date: Date) => void,
+    onCancel?: () => void,
 }
 
 function today() {
@@ -38,7 +40,7 @@ export function DateSelectModal(properties: DateSelectProps) {
     const [mode, setMode] = useState(Mode.Month);
     const [visibleMonth, setVisibleMonth] = useState(maxDate.getMonth())
     const [visibleYear, setVisibleYear] = useState(maxDate.getFullYear())
-    const [selected, setSelected] = useState(maxDate);
+    const [selected, setSelected] = useState(formatDate(properties.value || maxDate));
 
     function selectNextMode() {
         if (mode == Mode.Decade) {
@@ -215,6 +217,10 @@ export function DateSelectModal(properties: DateSelectProps) {
         )
     }
 
+    function formatDate(date: Date){
+        return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    }
+
     function getDayButtons() {
         var date = new Date(visibleYear, visibleMonth, 1);
         var days: Date[] = [];
@@ -237,10 +243,13 @@ export function DateSelectModal(properties: DateSelectProps) {
 
                         return (
                             <button onClick={() => {
-                                if(enabled){
+                                if (enabled) {
                                     setSelected(x);
                                 }
-                            }} className={`font-semibold  items-center w-full h-full cursor-default rounded-md flex justify-center ${enabled ? 'hover:bg-zinc-300 dark:hover:bg-zinc-700' : 'text-zinc-400'} ${selected.valueOf() == x.valueOf() ? "border-1 underline" : "border-none"}`}>
+                            }}
+                                onDoubleClick={() => {
+                                    properties.onConfirm?.(formatDate(x));
+                                }} className={`font-semibold  items-center w-full h-full cursor-default rounded-md flex justify-center ${enabled ? 'hover:bg-zinc-300 dark:hover:bg-zinc-700' : 'text-zinc-400'} ${selected.valueOf() == x.valueOf() ? "border-1 underline" : "border-none"}`}>
                                 {x.getDate()}
                             </button>
                         )
@@ -253,30 +262,6 @@ export function DateSelectModal(properties: DateSelectProps) {
 
     return (
         <div className="grow flex flex-col">
-            {/* <div className="relative border-b w-full overflow-hidden border-zinc-300 dark:border-zinc-700 h-full min-w-0 border-collapse outline-none bg-zinc-200 border-1 rounded-md text-left dark:bg-zinc-800  hover:bg-zinc-300  dark:hover:bg-zinc-700">
-                <input value={inputValue} onChange={(e) => {
-                    const input = e.currentTarget.value.replace("-", "");
-                    const currentValue = inputValue.replace("-", "");
-                    const lastChar = input[input.length - 1];
-
-                    const validatedValue = (() => {
-                        if (input.length < inputValue.length) {
-                            return currentValue.slice(0, currentValue.length - 1)
-                        }
-                        else {
-                            if (isNumeric(lastChar)) {
-                                return input;
-                            }
-                        }
-
-                        return currentValue;
-                    })();
-
-                    setInputValue(validatedValue.slice(0, 8))
-                }} placeholder="yyyy-mm-dd" type="text" className=" outline-none bg-none bg-transparent focus:dark:bg-zinc-700 focus:bg-zinc-300 p-2 w-full h-full " />
-                <Calendar strokeWidth={"1px"} className="absolute top-0 bottom-0 right-1 my-auto" />
-            </div> */}
-            {/* <Divider className="mt-4" /> */}
             <div className="grow flex flex-col">
                 <div className="flex gap-1 h-8 w-full justify-between">
                     <IconButton disabled={!previousEnabled()} onClick={previousClicked} icon={<ChevronLeft />} />
@@ -296,8 +281,10 @@ export function DateSelectModal(properties: DateSelectProps) {
             </div>
 
             <div className="w-full border-t border-zinc-300 dark:border-zinc-700 h-12 pt-4 mt-4 mb-2 gap-1 flex justify-end">
-                <button className="p-2 hover:bg-zinc-300 border-1 dark:hover:bg-zinc-700 rounded-md font-semibold  text-sm px-4">Cancel</button>
-                <button className="p-2 hover:bg-zinc-300 dark:hover:bg-zinc-700 rounded-md font-semibold  text-sm px-4">Select</button>
+                <button className="p-2 hover:bg-zinc-300 dark:hover:bg-zinc-700 rounded-md font-semibold  text-sm px-4">Cancel</button>
+                <button onClick={() => {
+                    properties.onConfirm?.(formatDate(selected));
+                }} className="p-2 hover:bg-zinc-300 dark:hover:bg-zinc-700 border-1 rounded-md font-semibold  text-sm px-4">Select</button>
             </div>
         </div>
     )
