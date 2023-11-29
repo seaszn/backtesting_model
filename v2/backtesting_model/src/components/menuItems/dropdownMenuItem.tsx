@@ -1,23 +1,18 @@
 import { Dropdown, DropdownItem, DropdownMenu, DropdownTrigger } from "@nextui-org/react"
 import { useState } from "react"
+import { MenuItemProps } from "./types";
+import { valueToString } from "@/lib/util";
 
-interface DropdownMenuItemProps<T> {
+interface DropdownProps<T> extends MenuItemProps<T> {
     items: T[],
-    initValue?: T
-    title?: string,
-    valueChanged?: (value: T) => void
 }
 
-export function DropdownMenuItem<T>(properties: DropdownMenuItemProps<T>) {
-    const [value, updateValue] = useState<T>(properties.initValue || properties.items[0]);
+export function DropdownMenuItem<T>(properties: DropdownProps<T>) {
+    const [value, updateValue] = useState<T>(properties.value || properties.items[0]);
 
-    function onValueChanged(value: T){
+    function onValueChanged(value: T) {
         updateValue(value);
         properties.valueChanged?.(value);
-    }
-
-    function valueToString(value: T) {
-        return `${value}`;
     }
 
     return (

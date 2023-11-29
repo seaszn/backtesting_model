@@ -1,12 +1,7 @@
 import React, { useState } from 'react'
+import { MenuItemProps } from './types';
 
-interface DatePickerMenuItemProps {
-    title?: string,
-    value: boolean,
-    valueChanged?: (value: boolean) => void;
-}
-
-export function CheckboxMenuItem(properties: DatePickerMenuItemProps) {
+export function CheckboxMenuItem(properties: MenuItemProps<boolean>) {
     const [value, updateValue] = useState(properties.value)
 
 

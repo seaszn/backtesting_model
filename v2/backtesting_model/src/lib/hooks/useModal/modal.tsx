@@ -22,7 +22,7 @@ export function Modal() {
                             }} />
                         </button>
                     </div>
-                    <div className='p-2 grow flex px-4 mt-4 text-xs font-normal'>
+                    <div className='grow flex text-xs font-normal'>
                         {options.content}
                     </div>
                 </div>

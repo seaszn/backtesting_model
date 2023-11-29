@@ -3,7 +3,7 @@
 import { ChartRenderer } from "@/components/chartRenderer";
 import { useDashboard } from "@/lib/hooks/useDashboard";
 import { Range, Time } from "lightweight-charts";
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { DashboardProperties } from "./types";
 import { Eye, PlusCircle, Search, Terminal, User, X, } from "lucide-react";
 import { Divider, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger } from "@nextui-org/react";
@@ -12,6 +12,7 @@ import { S4 } from "@/lib/guid";
 import { BacktestConfig } from "./menus/backtestConfig";
 import { Dialog } from "@headlessui/react";
 import { ModalProvider } from "@/lib/hooks/useModal/modalContext";
+import { invoke } from "@tauri-apps/api/tauri";
 
 const initialData = [
     { time: '2018-12-22', value: 32.51 },
@@ -28,6 +29,12 @@ const initialData = [
 
 export default function DashboardPage(properties: DashboardProperties) {
     const dashboard = useDashboard(properties.params.id)
+
+    useEffect(() => {
+        invoke('get_crypto_data').then(x => {
+            console.log('data');
+        });
+    }, [])
 
     const [rightMenuOpen, setRightMenuOpen] = useState(false);
 

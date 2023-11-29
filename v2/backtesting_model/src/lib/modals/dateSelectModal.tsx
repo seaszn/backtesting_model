@@ -261,7 +261,7 @@ export function DateSelectModal(properties: DateSelectProps) {
     }
 
     return (
-        <div className="grow flex flex-col">
+        <div className="grow p-2 px-4 mt-4 flex flex-col">
             <div className="grow flex flex-col">
                 <div className="flex gap-1 h-8 w-full justify-between">
                     <IconButton disabled={!previousEnabled()} onClick={previousClicked} icon={<ChevronLeft />} />
