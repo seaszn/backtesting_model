@@ -39,9 +39,9 @@ export function MarketSelectModal(properties: MarketSelectProps) {
             </div>
             <div className="grow overflow-y-auto overflow-x-hidden">
                 {
-                    properties.items.map(x => {
+                    properties.items.map((x, i) => {
                         return (
-                            <div onClick={() => properties.onConfirm?.(x)} className={`w-full h-14 grid px-4 py-4 border-b justify-between border-zinc-300 dark:border-zinc-700 hover:bg-zinc-300 dark:hover:bg-zinc-700 ${x == properties.value ? "bg-zinc-300 dark:bg-zinc-700" : ""}`} style={{ gridTemplateColumns: '10rem 1fr 1fr 1.5rem' }}>
+                            <div key={i} onClick={() => properties.onConfirm?.(x)} className={`w-full h-14 grid px-4 py-4 border-b justify-between border-zinc-300 dark:border-zinc-700 hover:bg-zinc-300 dark:hover:bg-zinc-700 ${x == properties.value ? "bg-zinc-300 dark:bg-zinc-700" : ""}`} style={{ gridTemplateColumns: '10rem 1fr 1fr 1.5rem' }}>
                                 <td className=" my-auto" style={{ width: '10rem' }}>
                                     {x.symbol}
                                 </td>

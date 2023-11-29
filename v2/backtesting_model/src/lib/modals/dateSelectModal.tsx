@@ -138,9 +138,9 @@ export function DateSelectModal(properties: DateSelectProps) {
             case Mode.Month:
                 return <div className="grid w-full gap-1 grid-cols-7 p-1 bg-zinc-700 rounded-md mt-4" style={{ gridTemplateColumns: '2rem 2rem 2rem 2rem 2rem 2rem 2rem' }}>
                     {
-                        WEEK_DAYS.map(x => {
+                        WEEK_DAYS.map((x, i) => {
                             return (
-                                <div className="mx-auto">{x}</div>
+                                <div key={i} className="mx-auto">{x}</div>
                             )
                         })
                     }
@@ -168,12 +168,12 @@ export function DateSelectModal(properties: DateSelectProps) {
         return (
             <div className="grid w-full h-56 gap-1 grid-cols-7 grid-rows-6 p-1 rounded-md mt-4" style={{ gridTemplateColumns: '1fr 1fr 1fr 1fr' }}>
                 {
-                    years.map((value) => {
+                    years.map((value, index) => {
                         const enabled = value <= maxDate.getFullYear() && value >= minDate.getFullYear();
                         const selectedYear = selected.getFullYear() == value;
 
                         return (
-                            <button onClick={() => {
+                            <button key={index} onClick={() => {
                                 if (enabled) {
                                     setVisibleYear(value);
                                     setMode(Mode.Year)
@@ -201,7 +201,7 @@ export function DateSelectModal(properties: DateSelectProps) {
                         const selectedMonth = selected.getMonth() == index && visibleYear == selected.getFullYear();
 
                         return (
-                            <button onClick={() => {
+                            <button key={index} onClick={() => {
                                 if (enabled) {
                                     setVisibleMonth(index);
                                     setMode(Mode.Month)
@@ -217,7 +217,7 @@ export function DateSelectModal(properties: DateSelectProps) {
         )
     }
 
-    function formatDate(date: Date){
+    function formatDate(date: Date) {
         return new Date(date.getFullYear(), date.getMonth(), date.getDate());
     }
 
@@ -233,16 +233,16 @@ export function DateSelectModal(properties: DateSelectProps) {
         return (
             <div className="grid gap-1 grid-cols-7 grid-rows-6 p-1 rounded-md mt-4" style={{ gridTemplateColumns: '2rem 2rem 2rem 2rem 2rem 2rem 2rem', gridTemplateRows: '2rem 2rem 2rem 2rem 2rem 2rem' }}>
                 {
-                    getNumericArray(days[0].getDay()).map(x => {
-                        return <div className="w-10 h-10" />
+                    getNumericArray(days[0].getDay()).map((_, i) => {
+                        return <div key={i} className="w-10 h-10" />
                     })
                 }
                 {
-                    days.map((x) => {
+                    days.map((x, i) => {
                         const enabled = x.valueOf() <= maxDate.valueOf();
 
                         return (
-                            <button onClick={() => {
+                            <button key={i} onClick={() => {
                                 if (enabled) {
                                     setSelected(x);
                                 }
