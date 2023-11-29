@@ -2,7 +2,7 @@ import { Dropdown, DropdownItem, DropdownMenu, DropdownTrigger } from "@nextui-o
 import { X } from "lucide-react";
 import { useState } from "react"
 
-type FuncValue = "mean" | "median" | "mode" | number
+export type FuncValue = "mean" | "median" | "mode" | number
 export const FUNC_VALUES: FuncValue[] = ["mean", "median", "mode"]
 
 interface FuncValueDropdown {
