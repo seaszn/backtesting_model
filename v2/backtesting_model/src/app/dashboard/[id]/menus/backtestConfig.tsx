@@ -1,35 +1,34 @@
 import { TIME_FRAMES, TimeFrame } from "@/app/chart/types";
 import { FuncValueMenuItem, CheckboxMenuItem, DatePickerMenuItem, DropdownMenuItem, MenuItemSection, FUNC_VALUES, ListSelectMenuItem } from "@/components/menuItems";
 import { FuncValue } from "@/components/menuItems/funcValueMenuItem";
-import { MarketInfo } from "@/lib/modals/marketSelectModal";
-import { useState } from 'react'
+import { CryptoAsset, Asset } from "@/lib/modals/marketSelectModal";
+import { invoke } from "@tauri-apps/api/tauri";
+import { useState, useEffect } from 'react'
 
 interface BacktestConfigProperties {
-    open: boolean
+    open: boolean,
+    onConfigChanged?: () => void;
 }
 
 type SignalType = "Inside / Outside" | "Above / Below"
 
-const markets: MarketInfo[] = [
-    {
-        name: 'Bitcoin',
-        symbol: 'BTCUSD',
-        source: 'https://www.google.com'
-    },
-    {
-        name: 'Ethereum',
-        symbol: 'ETHUSD',
-        source: 'https://www.google.com'
-    },
-    {
-        name: 'Solana',
-        symbol: 'SOLUSD',
-        source: 'https://www.google.com'
-    }
-]
+// const cryptoTokens: CryptoInfo[] = [
+//     {
+//         symbol: '',
+//         source: 'https://www.google.com'
+//     },
+//     {
+//         symbol: 'ETHUSD',
+//         source: 'https://www.google.com'
+//     },
+//     {
+//         name: 'Solana',
+//         symbol: 'SOLUSD',
+//         source: 'https://www.google.com'
+//     }
+// ]
 
 export function BacktestConfig(properties: BacktestConfigProperties) {
-
     const [timeFrame, setTimeFrame] = useState<TimeFrame>(TIME_FRAMES[0])
     const [startDate, setStartDate] = useState(new Date())
     const [endDate, setEndDate] = useState(new Date())
@@ -38,6 +37,21 @@ export function BacktestConfig(properties: BacktestConfigProperties) {
     const [primaryValue, setPrimaryValue] = useState<FuncValue>('mean')
     const [secundaryValue, setSecundaryValue] = useState<FuncValue>(1)
     const [invertSignal, setInvertSignal] = useState(false)
+    const [cryptoTokens, updateCryptoTokens] = useState<CryptoAsset[]>([]);
+
+    useEffect(() => {
+        invoke('get_token_list').then((x) => {
+            updateCryptoTokens(x as CryptoAsset[]);
+        });
+    }, [])
+
+    function StateChanged() {
+        const f = {
+            timeFrame,
+            startDate,
+            endDate
+        }
+    }
 
     return (
         <div hidden={!properties.open}>
@@ -51,8 +65,8 @@ export function BacktestConfig(properties: BacktestConfigProperties) {
 
             {/* Data Source Section */}
             <MenuItemSection removeMargin={true} keyLabel="Source" valueLabel="Value">
-                <ListSelectMenuItem value={markets[0]} items={markets} />
-                <ListSelectMenuItem title="Indicator" value={markets[0]} items={markets} />
+                <ListSelectMenuItem value={cryptoTokens[0]} items={cryptoTokens} />
+                <ListSelectMenuItem title="Indicator" value={cryptoTokens[0]} items={cryptoTokens} />
                 {/* <ListSelectMenuItem title="Select Indicator" value={'ts'} items={['ts', 'ta']} /> */}
             </MenuItemSection>
 

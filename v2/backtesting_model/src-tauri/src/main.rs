@@ -10,6 +10,7 @@
 // mod data_formatter;
 // mod data_reader;
 mod api;
+mod util;
 // mod data_writer;
 // mod session_storage;
 
@@ -19,15 +20,15 @@ use api::crypto::*;
 fn main() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
-            get_crypto_data
+            get_token_list
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
 
 #[tauri::command]
-fn get_crypto_data() -> Vec<CryptoMarketInfo> {
-    return api::crypto::get_crypto_data();
+async fn get_token_list() -> Vec<CryptoAsset> {
+    return api::crypto::get_token_list().await;
 }
 // #[tauri::command]
 // fn load_data_info(folder: &str) -> Vec<DataSetInfo> {

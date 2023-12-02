@@ -30,12 +30,6 @@ const initialData = [
 export default function DashboardPage(properties: DashboardProperties) {
     const dashboard = useDashboard(properties.params.id)
 
-    useEffect(() => {
-        invoke('get_crypto_data').then(x => {
-            console.log('data');
-        });
-    }, [])
-
     const [rightMenuOpen, setRightMenuOpen] = useState(false);
 
     function onRightMenuStateChanged(open: boolean) {
