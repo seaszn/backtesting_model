@@ -29,6 +29,8 @@ export function DatePickerMenuItem(properties: DatePickerProps) {
     function onValueChanged(value: Date) {
         updateValue(value);
         properties.valueChanged?.(value);
+
+        updateModal?.();
     }
 
     return (

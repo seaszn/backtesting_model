@@ -41,6 +41,7 @@ export function BacktestConfig(properties: BacktestConfigProperties) {
 
     useEffect(() => {
         invoke('get_token_list').then((x) => {
+            console.log(x);
             updateCryptoTokens(x as CryptoAsset[]);
         });
     }, [])

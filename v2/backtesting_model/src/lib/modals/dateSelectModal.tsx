@@ -281,7 +281,7 @@ export function DateSelectModal(properties: DateSelectProps) {
             </div>
 
             <div className="w-full border-t border-zinc-300 dark:border-zinc-700 h-12 pt-4 mt-4 mb-2 gap-1 flex justify-end">
-                <button className="p-2 hover:bg-zinc-300 dark:hover:bg-zinc-700 rounded-md font-semibold  text-sm px-4">Cancel</button>
+                <button onClick={() => properties.onCancel?.()} className="p-2 hover:bg-zinc-300 dark:hover:bg-zinc-700 rounded-md font-semibold  text-sm px-4">Cancel</button>
                 <button onClick={() => {
                     properties.onConfirm?.(formatDate(selected));
                 }} className="p-2 hover:bg-zinc-300 dark:hover:bg-zinc-700 border-1 rounded-md font-semibold  text-sm px-4">Select</button>
