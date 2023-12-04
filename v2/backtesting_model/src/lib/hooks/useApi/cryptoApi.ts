@@ -5,7 +5,7 @@ import { MarketApiState, CryptoAsset, MarketAsset } from "./types";
 
 const INIT_STATE: MarketApiState<CryptoAsset> = {
     assets: [],
-    refreshAssets: () => refreshAssets()
+    refreshAssets: () => refreshAssets(),
 }
 
 async function refreshAssets(): Promise<CryptoAsset[]> {
@@ -27,7 +27,6 @@ async function refreshAssets(): Promise<CryptoAsset[]> {
 }
 
 function useCryptoApi() {
-
     const internal = (() => {
         const [state, updateState] = useState(INIT_STATE);
 

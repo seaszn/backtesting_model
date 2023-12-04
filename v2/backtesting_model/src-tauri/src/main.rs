@@ -30,6 +30,10 @@ fn main() {
 async fn get_crypto_assets() -> Vec<CryptoAsset> {
     return api::crypto::get_assets().await;
 }
+
+async fn get_market_history(){
+    // println!("{:#?}");
+}
 // #[tauri::command]
 // fn load_data_info(folder: &str) -> Vec<DataSetInfo> {
 //     let raw_json = read_file_to_string(format!("{}/", folder) + INDEX_FILE_NAME);

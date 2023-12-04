@@ -1,25 +1,26 @@
 import { ModalContext } from "@/lib/hooks/useModal";
 import { DateSelectModal } from "@/lib/modals/dateSelectModal";
-import React, { useContext, useState } from 'react'
+import React, { useContext, useState, useEffect } from 'react'
 import { MenuItemProps } from "./listSelectMenuItem";
 
 interface DatePickerProps extends MenuItemProps<Date> {
     minDate: Date
-    maxDate?: Date,
     onCancelled?: () => void;
 }
 
 function today() {
     const now = new Date();
-    return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    return new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
 }
 
 
 export function DatePickerMenuItem(properties: DatePickerProps) {
     const { updateModal } = useContext(ModalContext);
-    const [value, updateValue] = useState(properties.value || today())
+    const [value, updateValue] = useState(properties.value)
 
-    const maxDate = properties.maxDate || today()
+    useEffect(() => {
+        updateValue(properties.value)
+    }, [properties.value])
 
     function closeModal() {
         updateModal?.();
@@ -40,9 +41,9 @@ export function DatePickerMenuItem(properties: DatePickerProps) {
                     <label className="my-auto pl-2">{properties.title || "Select Date"}</label>
                     <button onClick={() => {
                         updateModal?.({
-                            backdrop: false,
+                            backdrop: true,
                             closeOnClickOutside: true,
-                            content: <DateSelectModal onCancel={closeModal} onConfirm={onValueChanged} value={value} maxDate={maxDate} minDate={properties.minDate} />,
+                            content: <DateSelectModal onCancel={closeModal} onConfirm={onValueChanged} value={value} maxDate={today()} minDate={properties.minDate} />,
                             title: properties.title || "Select Date",
                             allowClose: true
                         });

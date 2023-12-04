@@ -40,7 +40,7 @@ export function ListSelectMenuItem<T extends ListItemValue>(properties: MenuSele
                     <label className="my-auto pl-2">{properties.title || "Market"}</label>
                     <button onClick={() => {
                         updateModal?.({
-                            backdrop: false,
+                            backdrop: true,
                             closeOnClickOutside: true,
                             content: <ListSelectModal
                                 onCancel={closeModal}

@@ -7,10 +7,11 @@ import { useState, useEffect } from 'react'
 interface BacktestConfigProperties {
     open: boolean,
     state: BacktestConfig
-    onConfigChanged?: (old: BacktestConfig | undefined, current: BacktestConfig) => void;
+    onConfigChanged?: (current: BacktestConfig) => void;
 }
 
 type SignalType = "Inside / Outside" | "Above / Below"
+const DEFAULT_START_DATE = new Date(2018, 0, 1).valueOf();
 
 export interface BacktestConfig {
     marketAsset: MarketAsset,
@@ -31,15 +32,17 @@ export function BacktestConfigMenu(properties: BacktestConfigProperties) {
     }, [cryptoApi.assets])
 
     function stateChanged(newState: BacktestConfig) {
-        const oldState = properties.state;
-        properties.onConfigChanged?.(oldState, newState);
+        properties.onConfigChanged?.(newState);
     }
 
     function marketAssetChanged(asset: MarketAsset) {
-        stateChanged({
-            ...properties.state,
-            marketAsset: asset
-        })
+        if(asset != undefined){
+            stateChanged({
+                ...properties.state,
+                marketAsset: asset,
+                startDate: new Date(Math.max(asset.start_date.valueOf(), DEFAULT_START_DATE)),
+            })
+        }
     }
 
     function timeFrameChanged(timeFrame: TimeFrame) {
@@ -122,8 +125,8 @@ export function BacktestConfigMenu(properties: BacktestConfigProperties) {
             {/* Time Variables */}
             <MenuItemSection keyLabel="Property" valueLabel="Value">
                 <DropdownMenuItem title="Time Frame" value={properties.state.timeFrame} valueChanged={timeFrameChanged} items={TIME_FRAMES} />
-                <DatePickerMenuItem valueChanged={startDateChanged} minDate={new Date(2018, 0, 1)} title="Start Date" value={properties.state.startDate} />
-                <DatePickerMenuItem valueChanged={endDateChanged} minDate={new Date(2018, 0, 1)} title="End Date" value={properties.state.endDate} />
+                <DatePickerMenuItem valueChanged={startDateChanged} minDate={properties.state.marketAsset.start_date} title="Start Date" value={properties.state.startDate} />
+                <DatePickerMenuItem valueChanged={endDateChanged} minDate={properties.state.startDate} title="End Date" value={properties.state.endDate} />
             </MenuItemSection>
 
             {/* State Section */}

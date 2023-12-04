@@ -12,6 +12,6 @@ export interface CryptoAsset extends MarketAsset {
 
 export interface MarketApiState<T extends MarketAsset> {
     assets: T[],
-    refreshAssets: () => Promise<T[]>
+    refreshAssets: () => Promise<T[]>,
 }
 

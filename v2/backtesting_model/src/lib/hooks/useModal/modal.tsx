@@ -27,7 +27,11 @@ export function Modal() {
                     </div>
                 </div>
                 {
-                    options.backdrop ? <div className='w-full z-20 h-full absolute' style={{ background: "rgb(0,0,0,0.7)" }} /> : null
+                    options.backdrop ? <div onClick={(e) => {
+                        if (options.closeOnClickOutside) {
+                            updateModal?.();
+                        }
+                    }} className='w-full z-20 h-full absolute' style={{ background: "rgb(0,0,0,0.4)" }} /> : null
                 }
 
             </div>,

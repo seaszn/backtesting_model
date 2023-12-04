@@ -42,11 +42,11 @@ export default function DashboardPage(properties: DashboardProperties) {
         invertSignal: false
     });
 
-    function backtestConfigChanged(old: BacktestConfig | undefined, current: BacktestConfig){
-        if(current.marketAsset != undefined){
+    function backtestConfigChanged(current: BacktestConfig){
             setBacktestConfig(current);
-            console.log(current.marketAsset)
-        }
+        
+        console.log(current)
+
     }
 
     function onRightMenuStateChanged(open: boolean) {

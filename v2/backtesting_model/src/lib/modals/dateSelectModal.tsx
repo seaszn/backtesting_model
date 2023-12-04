@@ -23,7 +23,7 @@ function getNumericArray(length: number) {
 interface DateSelectProps {
     minDate: Date,
     maxDate?: Date,
-    value?: Date,
+    value: Date,
     onConfirm?: (date: Date) => void,
     onCancel?: () => void,
 }
@@ -38,9 +38,9 @@ export function DateSelectModal(properties: DateSelectProps) {
     const maxDate = properties.maxDate || today()
 
     const [mode, setMode] = useState(Mode.Month);
-    const [visibleMonth, setVisibleMonth] = useState(maxDate.getMonth())
-    const [visibleYear, setVisibleYear] = useState(maxDate.getFullYear())
-    const [selected, setSelected] = useState(formatDate(properties.value || maxDate));
+    const [visibleMonth, setVisibleMonth] = useState(properties.value.getMonth())
+    const [visibleYear, setVisibleYear] = useState(properties.value.getFullYear())
+    const [selected, setSelected] = useState(formatDate(properties.value));
 
     function selectNextMode() {
         if (mode == Mode.Decade) {
@@ -225,7 +225,7 @@ export function DateSelectModal(properties: DateSelectProps) {
         var date = new Date(visibleYear, visibleMonth, 1);
         var days: Date[] = [];
 
-        while (date.getMonth() === visibleMonth) {
+        while (date.getMonth() == visibleMonth) {
             days.push(new Date(date));
             date.setDate(date.getDate() + 1);
         }
