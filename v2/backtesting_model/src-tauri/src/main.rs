@@ -20,15 +20,15 @@ use api::crypto::*;
 fn main() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
-            get_token_list
+            get_crypto_assets
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
 
 #[tauri::command]
-async fn get_token_list() -> Vec<CryptoAsset> {
-    return api::crypto::get_token_list().await;
+async fn get_crypto_assets() -> Vec<CryptoAsset> {
+    return api::crypto::get_assets().await;
 }
 // #[tauri::command]
 // fn load_data_info(folder: &str) -> Vec<DataSetInfo> {

@@ -3,11 +3,11 @@ import { DatePickerMenuItem } from "./datePickerMenuItem";
 import { DropdownMenuItem } from "./dropdownMenuItem";
 import { FuncValueMenuItem, FUNC_VALUES } from "./funcValueMenuItem";
 import { MenuItemSection } from "./menuItemSection";
-import { MarketSelectMenuItem } from "./marketSelectMenuItem";
+import { ListSelectMenuItem } from "./listSelectMenuItem";
 
 export {
     CheckboxMenuItem,
-    MarketSelectMenuItem as ListSelectMenuItem,
+    ListSelectMenuItem,
     DatePickerMenuItem,
     DropdownMenuItem,
     FuncValueMenuItem,

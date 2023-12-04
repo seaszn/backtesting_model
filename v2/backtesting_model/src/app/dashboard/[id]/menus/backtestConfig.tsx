@@ -1,57 +1,106 @@
 import { TIME_FRAMES, TimeFrame } from "@/app/chart/types";
-import { FuncValueMenuItem, CheckboxMenuItem, DatePickerMenuItem, DropdownMenuItem, MenuItemSection, FUNC_VALUES, ListSelectMenuItem } from "@/components/menuItems";
+import { FuncValueMenuItem, CheckboxMenuItem, DatePickerMenuItem, DropdownMenuItem, MenuItemSection, ListSelectMenuItem } from "@/components/menuItems";
 import { FuncValue } from "@/components/menuItems/funcValueMenuItem";
-import { CryptoAsset, Asset } from "@/lib/modals/marketSelectModal";
-import { invoke } from "@tauri-apps/api/tauri";
+import { MarketAsset, useCryptoApi } from "@/lib/hooks/useApi";
 import { useState, useEffect } from 'react'
 
 interface BacktestConfigProperties {
     open: boolean,
-    onConfigChanged?: () => void;
+    state: BacktestConfig
+    onConfigChanged?: (old: BacktestConfig | undefined, current: BacktestConfig) => void;
 }
 
 type SignalType = "Inside / Outside" | "Above / Below"
 
-// const cryptoTokens: CryptoInfo[] = [
-//     {
-//         symbol: '',
-//         source: 'https://www.google.com'
-//     },
-//     {
-//         symbol: 'ETHUSD',
-//         source: 'https://www.google.com'
-//     },
-//     {
-//         name: 'Solana',
-//         symbol: 'SOLUSD',
-//         source: 'https://www.google.com'
-//     }
-// ]
+export interface BacktestConfig {
+    marketAsset: MarketAsset,
+    timeFrame: TimeFrame,
+    startDate: Date,
+    endDate: Date,
+    signalType: SignalType,
+    primaryValue: FuncValue,
+    secundaryValue?: FuncValue,
+    invertSignal: boolean
+}
 
-export function BacktestConfig(properties: BacktestConfigProperties) {
-    const [timeFrame, setTimeFrame] = useState<TimeFrame>(TIME_FRAMES[0])
-    const [startDate, setStartDate] = useState(new Date())
-    const [endDate, setEndDate] = useState(new Date())
-
-    const [signalType, setSignalType] = useState<SignalType>('Above / Below')
-    const [primaryValue, setPrimaryValue] = useState<FuncValue>('mean')
-    const [secundaryValue, setSecundaryValue] = useState<FuncValue>(1)
-    const [invertSignal, setInvertSignal] = useState(false)
-    const [cryptoTokens, updateCryptoTokens] = useState<CryptoAsset[]>([]);
+export function BacktestConfigMenu(properties: BacktestConfigProperties) {
+    const cryptoApi = useCryptoApi();
 
     useEffect(() => {
-        invoke('get_token_list').then((x) => {
-            console.log(x);
-            updateCryptoTokens(x as CryptoAsset[]);
-        });
-    }, [])
+        marketAssetChanged(cryptoApi.assets[0]);
+    }, [cryptoApi.assets])
 
-    function StateChanged() {
-        const f = {
-            timeFrame,
-            startDate,
-            endDate
+    function stateChanged(newState: BacktestConfig) {
+        const oldState = properties.state;
+        properties.onConfigChanged?.(oldState, newState);
+    }
+
+    function marketAssetChanged(asset: MarketAsset) {
+        stateChanged({
+            ...properties.state,
+            marketAsset: asset
+        })
+    }
+
+    function timeFrameChanged(timeFrame: TimeFrame) {
+        stateChanged({
+            ...properties.state,
+            timeFrame
+        })
+    }
+
+    function startDateChanged(date: Date) {
+        stateChanged({
+            ...properties.state,
+            startDate: date
+        })
+    }
+
+    function endDateChanged(date: Date) {
+        stateChanged({
+            ...properties.state,
+            endDate: date
+        })
+    }
+
+    function primaryValueChanged(value: FuncValue) {
+        stateChanged({
+            ...properties.state,
+            primaryValue: value
+        })
+    }
+
+    function secundaryValueChanged(value: FuncValue) {
+        stateChanged({
+            ...properties.state,
+            secundaryValue: value
+        })
+    }
+
+    function signalTypeChanged(type: SignalType) {
+        if (type == 'Above / Below') {
+            stateChanged({
+                ...properties.state,
+                signalType: type,
+                primaryValue: 'mean',
+                secundaryValue: undefined
+            })
         }
+        else {
+            stateChanged({
+                ...properties.state,
+                signalType: type,
+                primaryValue: 'mean',
+                secundaryValue: 'median'
+            })
+        }
+    }
+
+    function invertSignalChanged(value: boolean) {
+        stateChanged({
+            ...properties.state,
+            invertSignal: value
+        })
     }
 
     return (
@@ -66,24 +115,23 @@ export function BacktestConfig(properties: BacktestConfigProperties) {
 
             {/* Data Source Section */}
             <MenuItemSection removeMargin={true} keyLabel="Source" valueLabel="Value">
-                <ListSelectMenuItem value={cryptoTokens[0]} items={cryptoTokens} />
-                <ListSelectMenuItem title="Indicator" value={cryptoTokens[0]} items={cryptoTokens} />
-                {/* <ListSelectMenuItem title="Select Indicator" value={'ts'} items={['ts', 'ta']} /> */}
+                <ListSelectMenuItem title="Market" valueChanged={(e) => marketAssetChanged(e)} value={properties.state.marketAsset} items={cryptoApi.assets} />
+                <ListSelectMenuItem title="Indicator" value={cryptoApi.assets[0]} items={cryptoApi.assets} />
             </MenuItemSection>
 
             {/* Time Variables */}
             <MenuItemSection keyLabel="Property" valueLabel="Value">
-                <DropdownMenuItem value={timeFrame} valueChanged={setTimeFrame} items={TIME_FRAMES} />
-                <DatePickerMenuItem valueChanged={setStartDate} minDate={new Date(2018, 0, 1)} title="Start Date" value={startDate} />
-                <DatePickerMenuItem valueChanged={setEndDate} minDate={new Date(2018, 0, 1)} title="End Date" value={endDate} />
+                <DropdownMenuItem title="Time Frame" value={properties.state.timeFrame} valueChanged={timeFrameChanged} items={TIME_FRAMES} />
+                <DatePickerMenuItem valueChanged={startDateChanged} minDate={new Date(2018, 0, 1)} title="Start Date" value={properties.state.startDate} />
+                <DatePickerMenuItem valueChanged={endDateChanged} minDate={new Date(2018, 0, 1)} title="End Date" value={properties.state.endDate} />
             </MenuItemSection>
 
             {/* State Section */}
             <MenuItemSection keyLabel="Signal" valueLabel="Value">
-                <DropdownMenuItem valueChanged={setSignalType} items={["Above / Below", "Inside / Outside"]} value={signalType} />
-                <FuncValueMenuItem value={primaryValue} title={signalType == "Inside / Outside" ? "Min Value" : "Value"} valueChanged={setPrimaryValue} />
-                {signalType == "Inside / Outside" ? (<FuncValueMenuItem value={secundaryValue} title="Max Value" valueChanged={setSecundaryValue} />) : null}
-                <CheckboxMenuItem title="Invert signal" value={invertSignal} valueChanged={setInvertSignal} />
+                <DropdownMenuItem title="Type" valueChanged={signalTypeChanged} items={["Above / Below", "Inside / Outside"]} value={properties.state.signalType} />
+                <FuncValueMenuItem value={properties.state.primaryValue} title={properties.state.signalType == "Inside / Outside" ? "Min Value" : "Value"} valueChanged={primaryValueChanged} />
+                {properties.state.signalType == "Inside / Outside" ? (<FuncValueMenuItem value={properties.state.secundaryValue} title="Max Value" valueChanged={secundaryValueChanged} />) : null}
+                <CheckboxMenuItem title="Invert signal" value={properties.state.invertSignal} valueChanged={invertSignalChanged} />
             </MenuItemSection>
         </div>
     );

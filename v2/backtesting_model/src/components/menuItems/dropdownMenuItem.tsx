@@ -1,7 +1,7 @@
 import { Dropdown, DropdownItem, DropdownMenu, DropdownTrigger } from "@nextui-org/react"
 import { useState } from "react"
-import { MenuItemProps } from "./types";
 import { valueToString } from "@/lib/util";
+import { MenuItemProps } from "./listSelectMenuItem";
 
 interface DropdownProps<T> extends MenuItemProps<T> {
     items: T[],

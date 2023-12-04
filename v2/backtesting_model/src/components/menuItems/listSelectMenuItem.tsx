@@ -1,32 +1,35 @@
 import { useState, useContext, useEffect } from "react"
-import { MenuItemProps } from "./types"
-import { valueToString } from "@/lib/util";
-import { Asset, MarketSelectModal } from "@/lib/modals/marketSelectModal";
+import { ListItemValue, ListSelectModal } from "@/lib/modals/listSelectModal";
 import { ModalContext } from "@/lib/hooks/useModal";
 
-interface MarketSelectProps extends MenuItemProps<Asset> {
-    items: Asset[]
+
+export interface MenuItemProps<T> {
+    title: string,
+    value: T,
+    valueChanged?: (value: T) => void;
     cancelled?: () => void
 }
 
+interface MenuSelectProps<T extends ListItemValue> extends MenuItemProps<T> {
+    items: T[]
+}
 
-export function MarketSelectMenuItem(properties: MarketSelectProps) {
+export function ListSelectMenuItem<T extends ListItemValue>(properties: MenuSelectProps<T>) {
     const { updateModal } = useContext(ModalContext);
-    const [value, updateValue] = useState(properties.value || properties.items[0]);
+    // const [value, updateValue] = useState(properties.value || properties.items[0]);
 
-    useEffect(() => {
-        updateValue(properties.items[0])
-    }, [properties.value, properties.items])
+    // useEffect(() => {
+    //     // updateValue(properties.items[0])
+    //     // properties.valueChanged?.(properties.items[0])
+    // }, [properties.value, properties.items])
 
     function closeModal() {
         updateModal?.();
         properties.cancelled?.()
     }
 
-    function onValueChanged(value: Asset) {
-        updateValue(value);
+    function onValueChanged(value: T) {
         closeModal();
-
         properties.valueChanged?.(value);
     }
 
@@ -39,10 +42,10 @@ export function MarketSelectMenuItem(properties: MarketSelectProps) {
                         updateModal?.({
                             backdrop: false,
                             closeOnClickOutside: true,
-                            content: <MarketSelectModal
+                            content: <ListSelectModal
                                 onCancel={closeModal}
                                 onConfirm={onValueChanged}
-                                value={value}
+                                value={properties.value!}
                                 items={properties.items} />,
                             title: "Select Market",
                             allowClose: true
@@ -50,7 +53,7 @@ export function MarketSelectMenuItem(properties: MarketSelectProps) {
                     }} className="border-b h-8 overflow-hidden rounded-sm  border-zinc-300 dark:border-zinc-700 hover:bg-zinc-300 dark:hover:bg-zinc-700">
                         <div className="w-full p-2 text-right h-full">
                             <label className=" border-zinc-300 dark:border-zinc-700 hover:bg-zinc-300 py-2 dark:hover:bg-zinc-700  font-semibold text-right">
-                                {value?.symbol || "Loading..."}
+                                {properties.value?.title() || "Loading..."}
                             </label>
                         </div>
                     </button>

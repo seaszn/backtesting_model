@@ -3,16 +3,16 @@
 import { ChartRenderer } from "@/components/chartRenderer";
 import { useDashboard } from "@/lib/hooks/useDashboard";
 import { Range, Time } from "lightweight-charts";
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { DashboardProperties } from "./types";
 import { Eye, PlusCircle, Search, Terminal, User, X, } from "lucide-react";
 import { Divider, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger } from "@nextui-org/react";
 import { IconButton } from "@/components/iconButton";
 import { S4 } from "@/lib/guid";
-import { BacktestConfig } from "./menus/backtestConfig";
-import { Dialog } from "@headlessui/react";
+import { BacktestConfig, BacktestConfigMenu } from "./menus/backtestConfig";
 import { ModalProvider } from "@/lib/hooks/useModal/modalContext";
-import { invoke } from "@tauri-apps/api/tauri";
+import { TIME_FRAMES } from "@/app/chart/types";
+import { EMPTY_ASSET } from "@/lib/hooks/useApi";
 
 const initialData = [
     { time: '2018-12-22', value: 32.51 },
@@ -31,6 +31,23 @@ export default function DashboardPage(properties: DashboardProperties) {
     const dashboard = useDashboard(properties.params.id)
 
     const [rightMenuOpen, setRightMenuOpen] = useState(false);
+    const [backtestConfig, setBacktestConfig] = useState<BacktestConfig>({
+        marketAsset: EMPTY_ASSET,
+        timeFrame: TIME_FRAMES[0],
+        startDate: new Date(),
+        endDate: new Date(),
+        signalType: 'Above / Below',
+        primaryValue: 'mean',
+        secundaryValue: undefined,
+        invertSignal: false
+    });
+
+    function backtestConfigChanged(old: BacktestConfig | undefined, current: BacktestConfig){
+        if(current.marketAsset != undefined){
+            setBacktestConfig(current);
+            console.log(current.marketAsset?.source)
+        }
+    }
 
     function onRightMenuStateChanged(open: boolean) {
         setRightMenuOpen(open);
@@ -47,7 +64,7 @@ export default function DashboardPage(properties: DashboardProperties) {
         // }
     }
 
-    function onCrosshairMoved(value: number, time: Time, id: string) {
+    function onChartCrosshairMoved(value: number, time: Time, id: string) {
         //     switch (id) {
         //         case priceChartRef.current.id?.():
         //             indicatorChartRef.current.setCrosshairPosition?.(0, time);
@@ -87,11 +104,11 @@ export default function DashboardPage(properties: DashboardProperties) {
                         <IconButton icon={<Eye style={{ strokeWidth: '1px' }} className="h-auto w-auto" />} />
                     </div>
                     <div className="block overflow-hidden rounded-t-md" >
-                        <ChartRenderer onCrosshairMoved={onCrosshairMoved} onVisibleRangeChanged={onChartVisibleRangeChanged} data={initialData} id={S4() + S4()} />
+                        <ChartRenderer onCrosshairMoved={onChartCrosshairMoved} onVisibleRangeChanged={onChartVisibleRangeChanged} data={initialData} id={S4() + S4()} />
                     </div>
                     <div className="block text-xs dark:bg-zinc-900 text-black dark:text-white bg-zinc-100 rounded-tl-md" >
                         <div className="grid grid-cols-2 h-full w-full" style={{ gridTemplateColumns: `${rightMenuOpen ? "17rem 3rem" : ""}` }}>
-                            <BacktestConfig open={rightMenuOpen} />
+                            <BacktestConfigMenu  onConfigChanged={backtestConfigChanged} state={backtestConfig} open={rightMenuOpen} />
                             <div className="p-2 border-l border-zinc-300 dark:border-zinc-700">
                                 <IconButton onClick={() => onRightMenuStateChanged(!rightMenuOpen)} icon={<Terminal style={{ strokeWidth: '1px' }} className="h-auto w-auto" />} />
                                 <IconButton icon={<Eye style={{ strokeWidth: '1px' }} className="h-auto w-auto" />} />

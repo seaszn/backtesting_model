@@ -1,7 +1,7 @@
 import { ModalContext } from "@/lib/hooks/useModal";
 import { DateSelectModal } from "@/lib/modals/dateSelectModal";
 import React, { useContext, useState } from 'react'
-import { MenuItemProps } from "./types";
+import { MenuItemProps } from "./listSelectMenuItem";
 
 interface DatePickerProps extends MenuItemProps<Date> {
     minDate: Date
