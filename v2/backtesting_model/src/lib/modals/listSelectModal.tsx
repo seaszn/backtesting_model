@@ -32,7 +32,7 @@ export function ListSelectModal<T extends ListItemValue>(properties: ListSelectP
                 </div>
                 <div className="w-6" />
             </div>
-            <div className="grow mb-8 overflow-y-auto overflow-x-hidden">
+            <div className="grow mb-8 overflow-y-auto overflow-x-hidden bg-zinc-200 dark:bg-zinc-800">
                 {
                     properties.items.map((x, i) => {
                         return (

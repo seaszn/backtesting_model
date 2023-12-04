@@ -3,9 +3,8 @@ import { MarketAsset, CryptoAsset } from "./types";
 
 export const EMPTY_ASSET: MarketAsset = {
     symbol: '',
-    // start_date: '',
-    source: '',
-    source_name: '',
+    start_date: new Date(),
+    provider: '',
     title: () => '',
     description: () => ''
 }

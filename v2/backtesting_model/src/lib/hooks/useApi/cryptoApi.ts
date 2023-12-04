@@ -10,13 +10,14 @@ const INIT_STATE: MarketApiState<CryptoAsset> = {
 
 async function refreshAssets(): Promise<CryptoAsset[]> {
     try {
-        const assets = await invoke<CryptoAsset[]>('get_crypto_assets');
-
-        return assets.map(x => {
+        return (await invoke('get_crypto_assets') as any).map((x: any) => {
             return {
-                ...x,
+                symbol: x.symbol,
+                start_date: new Date(x.start_date),
+                provider: x.provider,
+                networks: x.networks,
                 title: () => x.symbol,
-                description: () => x.source_name,
+                description: () => x.provider,
             };
         })
     }

@@ -3,15 +3,27 @@ use reqwest;
 use serde::{Deserialize, Serialize};
 use std::io::BufReader;
 
+use super::types::MarketAsset;
+
+const TOKEN_LIST_URL: &str = "https://docs.google.com/spreadsheets/d/1VvJSuC2bcPebcprhb8BUuw0pxcW203II6znI6Memwh0/export?format=csv&id=1VvJSuC2bcPebcprhb8BUuw0pxcW203II6znI6Memwh0&gid=596979248";
+
 #[derive(Serialize, Deserialize, Debug)]
 pub struct CryptoAsset {
     symbol: String,
+    start_date: String,
     networks: Vec<String>,
-    source: String,
-    source_name: String,
+    provider: String,
 }
 
-const TOKEN_LIST_URL: &str = "https://docs.google.com/spreadsheets/d/1VvJSuC2bcPebcprhb8BUuw0pxcW203II6znI6Memwh0/export?format=csv&id=1VvJSuC2bcPebcprhb8BUuw0pxcW203II6znI6Memwh0&gid=596979248";
+impl MarketAsset for CryptoAsset {
+    fn get_symbol(&self) -> String {
+        return self.symbol.clone();
+    }
+
+    fn get_source(&self) -> String {
+        return self.provider.clone();
+    }
+}
 
 pub async fn get_assets() -> Vec<CryptoAsset> {
     let mut result: Vec<CryptoAsset> = vec![];
@@ -25,13 +37,13 @@ pub async fn get_assets() -> Vec<CryptoAsset> {
                     let values: Vec<&str> = token_string.split(",").collect();
 
                     if values.len() == 4 {
-                        let networks: Vec<&str> = values[1].split('/').collect();
-                        
+                        let networks: Vec<&str> = values[3].split('/').collect();
+
                         result.push(CryptoAsset {
                             symbol: values[0].to_string(),
+                            start_date: values[1].to_string(),
+                            provider: values[2].to_string(),
                             networks: networks.iter().map(|x| x.to_string()).collect(),
-                            source: values[2].to_string(),
-                            source_name: values[3].to_string(),
                         });
                     }
                 }

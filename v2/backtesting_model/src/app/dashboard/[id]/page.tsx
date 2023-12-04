@@ -45,7 +45,7 @@ export default function DashboardPage(properties: DashboardProperties) {
     function backtestConfigChanged(old: BacktestConfig | undefined, current: BacktestConfig){
         if(current.marketAsset != undefined){
             setBacktestConfig(current);
-            console.log(current.marketAsset?.source)
+            console.log(current.marketAsset)
         }
     }
 

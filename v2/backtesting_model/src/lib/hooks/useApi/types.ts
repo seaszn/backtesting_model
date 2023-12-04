@@ -2,9 +2,8 @@ import { ListItemValue } from "@/lib/modals/listSelectModal"
 
 export interface MarketAsset extends ListItemValue  {
     symbol: string,
-    // start_date: string,
-    source: string,
-    source_name: string,
+    start_date: Date,
+    provider: string,
 }
 
 export interface CryptoAsset extends MarketAsset {
