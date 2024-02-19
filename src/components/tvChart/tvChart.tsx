@@ -39,7 +39,10 @@ export function TvChart(properties: TvChartProperties) {
             rightPriceScale: priceScaleOptions
         });
 
-        const lineSeries = chart.addLineSeries();
+        const lineSeries = chart.addLineSeries({
+            color: '#4338ca'
+        });
+        
         lineSeries.setData([
             { time: '2019-04-11', value: 80.01 },
             { time: '2019-04-12', value: 96.63 },
@@ -82,8 +85,6 @@ export function TvChart(properties: TvChartProperties) {
     // }, [autoScale, logScale])
 
     return (
-        <div className=' w-full h-full relative'>
             <div className={`w-full h-full`} ref={chartContainerRef}></div>
-        </div>
     );
 }

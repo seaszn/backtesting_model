@@ -1,5 +1,6 @@
 use crate::data::types::time_series::PerformanceRatios;
 
+#[derive(Debug)]
 pub struct SimulationResult {
     pub profit_loss: f64,
     pub percent_profitable: f64,

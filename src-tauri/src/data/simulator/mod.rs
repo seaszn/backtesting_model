@@ -21,7 +21,9 @@ pub fn from_csv(path: &str, sim_type: i32) -> Result<(), String> {
                 return Ok(());
             }
             x if x == SimulationType::Spot as i32 => {
-                if let Some(result) = spot_simulation(Dataset::from(parsed)) {}
+                if let Some(result) = spot_simulation(Dataset::from(parsed)) {
+                    println!("{:#?}", result);
+                }
                 //         println!("spot");
                 return Ok(());
             }
