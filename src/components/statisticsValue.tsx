@@ -10,6 +10,7 @@ export enum Evaluation {
 export interface StatisticValueProps<T extends number> {
     name: string;
     value: T;
+    suffix?: string,
     evaluate?: (value: T) => Evaluation;
 }
 
@@ -32,7 +33,7 @@ export function StatisticValue<T extends number>(props: StatisticValueProps<T>) 
         <div className={`w-full h-7 mt-4 flex flex-row-reverse gap-2 pt-0.5 overflow-hidden overflow-ellipsis border-b ${getBorderClass()}`}>
             <div className=' grow h-full overflow-hidden justify-between flex text-neutral-300 overflow-ellipsis w-full shrink'>
                 <label className='text-xs my-auto shrink-0 mr-4 '>{props.name}</label>
-                <label className='text-xs my-auto shrink-0 text-neutral-300'>{props.value}</label>
+                <label className='text-xs my-auto shrink-0 text-neutral-300'>{`${(Math.round(props.value * 100) / 100).toFixed(2)}${props.suffix || ''}`}</label>
             </div>
         </div>
     )

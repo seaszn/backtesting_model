@@ -8,6 +8,7 @@ import { useGlobalChartState } from "./useChartState";
 
 export interface TvChartProperties {
     data: TimeSeries;
+    equityCurve?: TimeSeries;
     criticalSeries?: TimeSeries;
     layout?: LayoutOptions,
     grid?: GridOptions,
@@ -38,6 +39,7 @@ export function TvChart(properties: TvChartProperties) {
     const [chart, updateChart] = useState<IChartApi>();
     const [dataSeries, updateDataSeries] = useState<LineSeriesApi>();
     const [criticalSeries, updateCriticalSeries] = useState<LineSeriesApi>();
+    const [equitySeries, updateEquitySeries] = useState<LineSeriesApi>();
 
     const chartContainerRef = useRef<any>();
 
@@ -47,7 +49,7 @@ export function TvChart(properties: TvChartProperties) {
             globalState.addListener('visible-range', onGlobalVisibleRangeChanged);
             chart?.subscribeCrosshairMove(onCrosshairMove);
             chart?.timeScale().subscribeVisibleTimeRangeChange(onVisibleRangeChanged);
-            
+
             return () => {
                 globalState.removeListener('crosshair', onGlobalCrosshairMove);
                 globalState.removeListener('visible-range', onGlobalVisibleRangeChanged);
@@ -72,7 +74,8 @@ export function TvChart(properties: TvChartProperties) {
             height: chartContainerRef.current.clientHeight,
             width: chartContainerRef.current.clientWidth,
             crosshair: crosshairOptions,
-            rightPriceScale: priceScaleOptions
+            rightPriceScale: priceScaleOptions,
+            leftPriceScale: priceScaleOptions,
         });
 
         // Initialize the data series
@@ -94,6 +97,20 @@ export function TvChart(properties: TvChartProperties) {
             series.setData(properties.criticalSeries);
             updateCriticalSeries(series);
         }
+
+        // Initialize the equity series if defined
+        if (properties.equityCurve) {
+            
+            const series = chart.addLineSeries({
+                priceScaleId: 'left',
+                lineWidth: 2,
+                color: '#ffffff'
+            });
+
+            series.setData(properties.equityCurve);
+            updateEquitySeries(series);
+        }
+
 
         // Subscribe to the crosshair move event
         chart.subscribeCrosshairMove(onCrosshairMove);
@@ -126,6 +143,13 @@ export function TvChart(properties: TvChartProperties) {
     }, [properties.criticalSeries])
 
     useEffect(() => {
+        if (properties.equityCurve && equitySeries) {
+            equitySeries.setData(properties.equityCurve)
+        }
+    }, [properties.equityCurve])
+
+
+    useEffect(() => {
         if (properties.data && dataSeries) {
             dataSeries.setData(properties.data)
         }
@@ -144,7 +168,7 @@ export function TvChart(properties: TvChartProperties) {
             globalState.updateHorzCrosshair(event.time);
         }
     }
-    
+
     function onVisibleRangeChanged(range: Range<Time> | null) {
         if (range) {
             globalState.updateVisibleRange(range);

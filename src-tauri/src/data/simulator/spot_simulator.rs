@@ -6,9 +6,11 @@ use crate::data::{
     types::{data_point::DataPoint, dataset::Dataset, time_series::TimeSeries},
 };
 
-use super::types::simulation_result::SimulationResult;
+use super::types::simulation_result::{SimulationResult, TradeResult};
 
-pub fn spot_simulation(data: Dataset) -> Option<SimulationResult> {
+const STARTING_CAPITAL: f64 = 1f64;
+
+pub fn spot_simulation(data: Dataset, critical_value: f64) -> Option<SimulationResult> {
     let mut equity: TimeSeries = TimeSeries::new(vec![]);
     let mut trades: Vec<Trade> = vec![];
     let mut position: Option<Position> = None;
@@ -24,8 +26,7 @@ pub fn spot_simulation(data: Dataset) -> Option<SimulationResult> {
             let current_equity = equity.last().unwrap().value;
 
             // Check if the signal is in a bulllish state
-            if prev_signal_value > &0f64 {
-
+            if prev_signal_value > &critical_value {
                 // Calculate the new equity value
                 let price_factor_change = *data_point.price() / prev_price_value;
                 let new_equity = current_equity * price_factor_change;
@@ -55,18 +56,20 @@ pub fn spot_simulation(data: Dataset) -> Option<SimulationResult> {
                 });
 
                 // Check if the signal just flipped short from long, if so, log the trade
-                if i > 1 && data[i - 2].signal() > &0f64 {
+                if i > 1 && data[i - 2].signal() > &critical_value {
                     if let Some(current_position) = position {
                         let intra_trade_equity = equity.take_from(current_position.index, i);
 
                         trades.push(Trade::new(
                             TradeExecution {
+                                index: current_position.index,
                                 time: current_position.time,
                                 price: *data[current_position.index].price(),
                                 value: current_position.value,
                                 volume: current_position.volume,
                             },
                             TradeExecution {
+                                index: i,
                                 time: *data_point.time(),
                                 price: *data_point.price(),
                                 value: current_equity,
@@ -80,26 +83,26 @@ pub fn spot_simulation(data: Dataset) -> Option<SimulationResult> {
                 }
             }
         } else {
-            if data_point.signal() > &0.0 {
+            if data_point.signal() > &critical_value {
                 position = Some({
                     Position {
                         index: i,
                         time: *data_point.time(),
-                        volume: 1000f64 / data_point.price(),
-                        value: 1000.0,
+                        volume: STARTING_CAPITAL / data_point.price(),
+                        value: STARTING_CAPITAL,
                     }
                 });
             }
 
             equity.push(DataPoint {
                 time: *data_point.time(),
-                value: 1000.0,
+                value: STARTING_CAPITAL,
             })
         }
     }
 
     // Calculate all the simulation results
-    let profit_loss: f64 = trades.iter().map(|x| x.profit_loss()).sum::<f64>() / (1000f64 / 100f64);
+    let profit_loss: f64 = trades.iter().map(|x| x.profit_loss()).sum::<f64>() / (STARTING_CAPITAL / 100f64);
     let max_percent_drawdown = equity.max_percent_drawdown()?;
     let max_intra_trade_drawdown = trades
         .iter()
@@ -125,8 +128,21 @@ pub fn spot_simulation(data: Dataset) -> Option<SimulationResult> {
     let percent_profitable = (profitable_trades.len() as f64) / (n_trades as f64) * 100f64;
     let profit_factor = gross_profit / gross_loss;
 
+    let trade_results: Vec<TradeResult> = trades
+        .iter()
+        .map(|x| TradeResult {
+            open: x.open.index,
+            close: x.close.index,
+            perc_profit_loss: ((x.close.value / x.open.value) - 1f64) * 100f64,
+            max_percent_drawdown: x.drawdown(),
+            max_intra_trade_drawdown: x.max_percent_drawdown(),
+            performance_ratios: x.performance_ratios(),
+        })
+        .collect();
+
     // Return the simulation result
     Some(SimulationResult {
+        equity_curve: equity,
         profit_loss,
         max_percent_drawdown,
         max_intra_trade_drawdown,
@@ -134,5 +150,6 @@ pub fn spot_simulation(data: Dataset) -> Option<SimulationResult> {
         percent_profitable,
         profit_factor,
         n_trades,
+        trades: trade_results,
     })
 }

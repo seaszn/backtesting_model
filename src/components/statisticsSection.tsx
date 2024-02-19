@@ -1,12 +1,13 @@
 import React, { useEffect, useRef, useState } from "react"
 import { StatisticValue, StatisticValueProps } from "./statisticsValue"
 import { ChevronDown, ChevronLeft } from "lucide-react"
+import { StatisticDateProps } from "./statisticsDate";
 
 interface StatisticsSectionProps<T extends number> {
     header?: string
     collapsable?: boolean;
     defaultCollapsed?: boolean;
-    children: Iterable<React.ReactElement<StatisticValueProps<T> | StatisticsSectionProps<T>>>
+    children: Iterable<React.ReactElement<StatisticValueProps<T> | StatisticsSectionProps<T> | StatisticDateProps>>
     onFocus?: () => void
 }
 

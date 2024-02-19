@@ -1,14 +1,15 @@
-use crate::data::types::time_series::TimeSeries;
+use crate::data::types::time_series::{PerformanceRatios, TimeSeries};
 
 #[derive(Debug)]
 pub struct Trade {
-    open: TradeExecution,
-    close: TradeExecution,
+    pub open: TradeExecution,
+    pub close: TradeExecution,
     equity: TimeSeries,
 }
 
-#[derive(Debug)]
+#[derive(Debug, serde::Serialize)]
 pub struct TradeExecution {
+    pub index: usize,
     pub time: i64,
     pub volume: f64,
     pub price: f64,
@@ -39,7 +40,7 @@ impl Trade {
         Some(nominal_drawdown / entry_price * 100f64)
     }
 
-    fn drawdown(&self) -> Option<f64> {
+    pub fn drawdown(&self) -> Option<f64> {
         if self.equity.len() > 0 {
             let mut max_equity = f64::MIN;
             let mut max_drawdown = f64::MAX;
@@ -59,5 +60,9 @@ impl Trade {
         }
 
         None
+    }
+
+    pub fn performance_ratios(&self) -> Option<PerformanceRatios> {
+        self.equity.risk_performance_ratios()
     }
 }
