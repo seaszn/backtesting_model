@@ -1,4 +1,5 @@
 use native_dialog::FileDialog;
+pub mod data;
 
 #[tauri::command]
 pub fn open_file_dialog() -> Result<String, String> {

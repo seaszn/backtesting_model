@@ -1,6 +1,6 @@
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
-#[derive(Deserialize, Clone, Copy, Debug)]
+#[derive(Deserialize, Serialize, Clone, Copy, Debug)]
 pub struct DataPoint {
     pub time: i64,
     pub value: f64,

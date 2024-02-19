@@ -2,7 +2,7 @@ use std::ops::{Index, IndexMut};
 
 use super::data_point::DataPoint;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize)]
 pub struct TimeSeries {
     data: Vec<DataPoint>,
 }
@@ -93,6 +93,7 @@ impl TimeSeries {
     pub fn len(&self) -> usize {
         self.data.len()
     }
+
 
     pub fn take_from(&self, start: usize, end: usize) -> TimeSeries {
         Self::new(self.data.split_at(start).1.split_at(end - start).0.to_vec())

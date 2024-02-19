@@ -1,24 +1,33 @@
 'use client';
 
-import { CrosshairOptions, GridOptions, HorzScaleOptions, IChartApi, LayoutOptions, PriceScaleOptions, createChart } from "lightweight-charts";
+import { CrosshairOptions, DeepPartial, GridOptions, HorzScaleOptions, IChartApi, ISeriesApi, InternalHorzScaleItem, LayoutOptions, LineData, LineSeriesOptions, LineStyleOptions, MouseEventParams, PriceScaleMode, PriceScaleOptions, Range, SeriesOptionsCommon, Time, WhitespaceData, createChart } from "lightweight-charts";
 import { useEffect, useRef, useState } from "react";
 import { DEFAULT_CROSSHAIR_OPTIONS, DEFAULT_GRID_OPTIONS, DEFAULT_HORZ_SCALE_OPTIONS, DEFAULT_LAYOUT_OPTIONS, DEFAULT_PRICE_SCALE_OPTIONS } from "./defaults";
+import { TimeSeries } from "@/app/types";
+import { useGlobalChartState } from "./useChartState";
 
 export interface TvChartProperties {
+    data: TimeSeries;
+    criticalSeries?: TimeSeries;
     layout?: LayoutOptions,
     grid?: GridOptions,
     crosshair?: CrosshairOptions,
     horzScale?: HorzScaleOptions,
     priceScale?: PriceScaleOptions,
+    defaultLog?: boolean
+    showTimeScale: boolean;
 }
 
-export interface TvChartReference {
+type LineSeriesApi = ISeriesApi<"Line", Time, LineData<Time> | WhitespaceData<Time>, LineSeriesOptions, DeepPartial<LineStyleOptions & SeriesOptionsCommon>>;
 
+export interface TvChartReference {
 }
 
 export function TvChart(properties: TvChartProperties) {
-    // const [autoScale, setAutoScale] = useState(true);
-    // const [logScale, setLogScale] = useState(false);
+    const globalState = useGlobalChartState();
+
+    const [autoScale, setAutoScale] = useState(true);
+    const [logScale, setLogScale] = useState(properties.defaultLog || false);
 
     const [layoutOptions, updateLayoutOptions] = useState<LayoutOptions>(properties?.layout || DEFAULT_LAYOUT_OPTIONS);
     const [gridOptions, updateGridOptions] = useState<GridOptions>(properties?.grid || DEFAULT_GRID_OPTIONS);
@@ -26,48 +35,133 @@ export function TvChart(properties: TvChartProperties) {
     const [horzScaleOptions, updateHorzScaleOptions] = useState<HorzScaleOptions>(properties?.horzScale || DEFAULT_HORZ_SCALE_OPTIONS);
     const [priceScaleOptions, updatePriceScaleOptions] = useState<PriceScaleOptions>(properties?.priceScale || DEFAULT_PRICE_SCALE_OPTIONS);
 
+    const [chart, updateChart] = useState<IChartApi>();
+    const [dataSeries, updateDataSeries] = useState<LineSeriesApi>();
+    const [criticalSeries, updateCriticalSeries] = useState<LineSeriesApi>();
+
     const chartContainerRef = useRef<any>();
 
     useEffect(() => {
+        if (globalState) {
+            globalState.addListener('crosshair', onGlobalCrosshairMove);
+            globalState.addListener('visible-range', onGlobalVisibleRangeChanged);
+            chart?.subscribeCrosshairMove(onCrosshairMove);
+            chart?.timeScale().subscribeVisibleTimeRangeChange(onVisibleRangeChanged);
+            
+            return () => {
+                globalState.removeListener('crosshair', onGlobalCrosshairMove);
+                globalState.removeListener('visible-range', onGlobalVisibleRangeChanged);
+                chart?.unsubscribeCrosshairMove(onCrosshairMove);
+                chart?.timeScale().unsubscribeVisibleTimeRangeChange(onVisibleRangeChanged);
+            }
+        }
+    }, [globalState, chart])
+
+    useEffect(() => {
+        // Initialize the chart
         const chart = createChart(chartContainerRef.current, {
+            localization: {
+                dateFormat: 'yyyy/MM/dd',
+            },
             layout: layoutOptions,
             grid: gridOptions,
-            timeScale: horzScaleOptions,
+            timeScale: {
+                ...horzScaleOptions,
+                visible: properties.showTimeScale
+            },
             height: chartContainerRef.current.clientHeight,
             width: chartContainerRef.current.clientWidth,
             crosshair: crosshairOptions,
             rightPriceScale: priceScaleOptions
         });
 
-        const lineSeries = chart.addLineSeries({
-            color: '#4338ca'
+        // Initialize the data series
+        const dataSeries = chart.addLineSeries({
+            color: '#4338ca',
+            lineWidth: 2
         });
-        
-        lineSeries.setData([
-            { time: '2019-04-11', value: 80.01 },
-            { time: '2019-04-12', value: 96.63 },
-            { time: '2019-04-13', value: 76.64 },
-            { time: '2019-04-14', value: 81.89 },
-            { time: '2019-04-15', value: 74.43 },
-            { time: '2019-04-16', value: 80.01 },
-            { time: '2019-04-17', value: 96.63 },
-            { time: '2019-04-18', value: 76.64 },
-            { time: '2019-04-19', value: 81.89 },
-            { time: '2019-04-20', value: 74.43 },
-        ]);
+        dataSeries.setData(properties.data);
+        updateDataSeries(dataSeries)
 
+        // Initialize the critical series if defined
+        if (properties.criticalSeries) {
+            const series = chart.addLineSeries({
+                lineWidth: 1,
+                lineStyle: 1,
+                color: '#ffffff'
+            });
+
+            series.setData(properties.criticalSeries);
+            updateCriticalSeries(series);
+        }
+
+        // Subscribe to the crosshair move event
+        chart.subscribeCrosshairMove(onCrosshairMove);
+
+        // fit the time scale to the data series
         chart.timeScale().fitContent();
 
+        // Initialize the resize observer
         const resizeObserver = new ResizeObserver(() => {
             handleResize(chart);
         })
         resizeObserver.observe(chartContainerRef.current);
 
+        // Stet the current chart
+        updateChart(chart);
+
+        // Unsubscribe all events on unmount
         return () => {
             resizeObserver.disconnect();
+
+            chart.unsubscribeCrosshairMove(onCrosshairMove);
             chart.remove();
         }
     }, [layoutOptions, gridOptions, crosshairOptions, horzScaleOptions, priceScaleOptions]);
+
+    useEffect(() => {
+        if (properties.criticalSeries && criticalSeries) {
+            criticalSeries.setData(properties.criticalSeries)
+        }
+    }, [properties.criticalSeries])
+
+    useEffect(() => {
+        if (properties.data && dataSeries) {
+            dataSeries.setData(properties.data)
+        }
+    }, [properties.data])
+
+    useEffect(() => {
+        updatePriceScaleOptions({
+            ...priceScaleOptions,
+            autoScale: autoScale,
+            mode: logScale ? PriceScaleMode.Logarithmic : PriceScaleMode.Normal
+        })
+    }, [autoScale, logScale])
+
+    function onCrosshairMove(event: MouseEventParams<Time>) {
+        if (event.time) {
+            globalState.updateHorzCrosshair(event.time);
+        }
+    }
+    
+    function onVisibleRangeChanged(range: Range<Time> | null) {
+        if (range) {
+            globalState.updateVisibleRange(range);
+        }
+    }
+
+    function onGlobalCrosshairMove(time: Time) {
+        if (chart && dataSeries) {
+            chart.setCrosshairPosition(0, time, dataSeries)
+        }
+    }
+
+    function onGlobalVisibleRangeChanged(time: Range<Time>) {
+        if (chart && dataSeries) {
+            chart.timeScale().setVisibleRange(time);
+        }
+    }
 
     function handleResize(chart: IChartApi) {
         if (chartContainerRef.current) {
@@ -75,16 +169,25 @@ export function TvChart(properties: TvChartProperties) {
         }
     }
 
+    function getToggleButtonStyle(state: boolean) {
+        if (state) {
+            return 'bg-indigo-700 border-indigo-700 text-neutral-300'
+        }
 
-    // useEffect(() => {
-    //     updatePriceScaleOptions({
-    //         ...priceScaleOptions,
-    //         autoScale: autoScale,
-    //         mode: logScale ? PriceScaleMode.Logarithmic : PriceScaleMode.Logarithmic
-    //     })
-    // }, [autoScale, logScale])
+        return 'hover:bg-neutral-700 border-neutral-700'
+    }
 
     return (
+        <div className=" w-full h-full relative">
+            <div className=" absolute flex z-40  justify-end bottom-2 bg-neutral-950  gap-1 p-1  right-2 w-12 h-8  text-neutral-500 hover:text-neutral-300">
+                <button onClick={() => setAutoScale(!autoScale)} className={`h-5 w-5 transition-colors rounded-sm flex border mt-0.5 border-neutral-700`}>
+                    <h1 className="text-sm m-auto font-semibold">A</h1>
+                </button>
+                <button onClick={() => setLogScale(!logScale)} className={`h-5 w-5 transition-colors rounded-sm  flex border mt-0.5 ${getToggleButtonStyle(logScale)}`}>
+                    <h1 className="text-sm m-auto font-semibold">L</h1>
+                </button>
+            </div>
             <div className={`w-full h-full`} ref={chartContainerRef}></div>
+        </div>
     );
 }

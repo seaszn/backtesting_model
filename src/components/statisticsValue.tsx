@@ -1,3 +1,4 @@
+import { FunctionComponent } from "react";
 
 // Given an offset index of 1 due to errors in switch case
 export enum Evaluation {
