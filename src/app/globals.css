@@ -9,8 +9,8 @@
 
 .modal {
   background: white;
-  height:100%;
-  width:100%;
+  height: 100%;
+  width: 100%;
   border-radius: 15px;
   padding: 15px;
 }
@@ -40,7 +40,7 @@
 /* ------------- */
 
 input[type="checkbox"]:checked {
-  
+
   color: white;
 }
 
@@ -94,7 +94,7 @@ input[type="checkbox"]:checked:after {
 
 .titlebar {
   height: 30px;
-  background:  rgb(244 244 245 / var(--tw-bg-opacity));
+  background: rgb(244 244 245 / var(--tw-bg-opacity));
   user-select: none;
   display: flex;
   justify-content: flex-end;
@@ -128,10 +128,10 @@ input[type="checkbox"]:checked:after {
   transition: none;
   overflow: hidden;
   cursor: default;
-   /*  dark:text-white w-12 */
+  /*  dark:text-white w-12 */
 }
 
-.titlebar-button:hover{
+.titlebar-button:hover {
   cursor: default;
 }
 
@@ -156,7 +156,7 @@ body {
       rgb(var(--background-end-rgb))) rgb(var(--background-start-rgb));
 }
 
-.page{
+.page {
   width: 100%;
   height: 100;
   padding: 6rem;
@@ -171,5 +171,144 @@ input::-webkit-inner-spin-button {
 
 /* Firefox */
 input[type=number] {
-  -moz-appearance: textfield;
+  /* -moz-appearance: textfield; */
+}
+
+.react-aria-Popover {
+  --background-color: var(--overlay-background);
+
+  border: 1px solid var(--border-color);
+  box-shadow: 0 8px 20px rgba(0 0 0 / 0.1);
+  border-radius: 6px;
+  background: var(--background-color);
+  color: var(--text-color);
+  outline: none;
+  max-width: 250px;
+  box-sizing: border-box;
+
+  .react-aria-OverlayArrow svg {
+    display: block;
+    fill: var(--background-color);
+    stroke: var(--border-color);
+    stroke-width: 1px;
+  }
+
+  &[data-placement=top] {
+    --origin: translateY(8px);
+
+    &:has(.react-aria-OverlayArrow) {
+      margin-bottom: 6px;
+    }
+  }
+
+  &[data-placement=bottom] {
+    --origin: translateY(-8px);
+
+    &:has(.react-aria-OverlayArrow) {
+      margin-top: 6px;
+    }
+
+    .react-aria-OverlayArrow svg {
+      transform: rotate(180deg);
+    }
+  }
+
+  &[data-placement=right] {
+    --origin: translateX(-8px);
+
+    &:has(.react-aria-OverlayArrow) {
+      margin-left: 6px;
+    }
+
+    .react-aria-OverlayArrow svg {
+      transform: rotate(90deg);
+    }
+  }
+
+  &[data-placement=left] {
+    --origin: translateX(8px);
+
+    &:has(.react-aria-OverlayArrow) {
+      margin-right: 6px;
+    }
+
+    .react-aria-OverlayArrow svg {
+      transform: rotate(-90deg);
+    }
+  }
+
+  &[data-entering] {
+    animation: popover-slide 200ms;
+  }
+
+  &[data-exiting] {
+    animation: popover-slide 200ms reverse ease-in;
+  }
+}
+
+@keyframes popover-slide {
+  from {
+    transform: var(--origin);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+
+.react-aria-Calendar {
+  width: fit-content;
+  max-width: 100%;
+  color: var(--text-color);
+
+  header {
+    display: flex;
+    align-items: center;
+    margin: 0 4px .5rem 4px;
+
+    .react-aria-Heading {
+      flex: 1;
+      margin: 0;
+      text-align: center;
+      font-size: 1.375rem;
+    }
+  }
+
+  .react-aria-Button {
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+  }
+
+  .react-aria-CalendarCell {
+    width: 2rem;
+    line-height: 2rem;
+    text-align: center;
+    border-radius: 6px;
+    cursor: default;
+    outline: none;
+    margin: 1px;
+    forced-color-adjust: none;
+
+    &[data-outside-month] {
+      display: none;
+    }
+
+    &[data-pressed] {
+      background: var(--gray-100);
+    }
+
+    &[data-focus-visible] {
+      outline: 2px solid var(--focus-ring-color);
+      outline-offset: 2px;
+    }
+
+    &[data-selected] {
+      background: var(--highlight-background);
+      color: var(--highlight-foreground);
+    }
+  }
 }

@@ -65,16 +65,21 @@ export function TvChart(properties: TvChartProperties) {
             localization: {
                 dateFormat: 'yyyy/MM/dd',
             },
+            
             layout: layoutOptions,
             grid: gridOptions,
             timeScale: {
                 ...horzScaleOptions,
-                visible: properties.showTimeScale
+                visible: properties.showTimeScale,
+                
             },
             height: chartContainerRef.current.clientHeight,
             width: chartContainerRef.current.clientWidth,
             crosshair: crosshairOptions,
-            rightPriceScale: priceScaleOptions,
+            rightPriceScale: {
+                ...priceScaleOptions,
+                minimumWidth: 100
+            },
             leftPriceScale: priceScaleOptions,
         });
 
@@ -110,7 +115,6 @@ export function TvChart(properties: TvChartProperties) {
             series.setData(properties.equityCurve);
             updateEquitySeries(series);
         }
-
 
         // Subscribe to the crosshair move event
         chart.subscribeCrosshairMove(onCrosshairMove);

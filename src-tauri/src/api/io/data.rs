@@ -1,19 +1,17 @@
 use crate::data::{
     csv::read_from_csv,
-    types::{
-        data_entry::DataEntry, data_point::DataPoint, time_series::TimeSeries,
-    },
+    types::{data_entry::DataEntry, data_point::DataPoint, time_series::TimeSeries},
 };
 
 #[derive(Debug, Clone, serde::Serialize)]
 
-pub struct DataRequest{
+pub struct DataRequest {
     price_series: TimeSeries,
     signal_series: TimeSeries,
 }
 
 #[tauri::command]
-pub fn get_data_from_file(path: &str) -> Result<DataRequest, String> {
+pub fn get_data_from_file(path: &str, start: i64) -> Result<DataRequest, String> {
     if let Ok(mut parsed) = read_from_csv::<DataEntry>(path) {
         parsed.sort_by(|a, b| a.time().partial_cmp(&b.time()).unwrap());
 
@@ -37,9 +35,9 @@ pub fn get_data_from_file(path: &str) -> Result<DataRequest, String> {
                 .collect::<Vec<DataPoint>>(),
         );
 
-        return  Ok(DataRequest{
+        return Ok(DataRequest {
             price_series: price_data,
-            signal_series: signal_data
+            signal_series: signal_data,
         });
     }
 

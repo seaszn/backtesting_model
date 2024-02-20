@@ -1,3 +1,5 @@
+use serde_json::StreamDeserializer;
+
 use crate::data::{
     simulator::types::{
         position::Position,
@@ -10,7 +12,7 @@ use super::types::simulation_result::{SimulationResult, TradeResult};
 
 const STARTING_CAPITAL: f64 = 1f64;
 
-pub fn spot_simulation(data: Dataset, critical_value: f64) -> Option<SimulationResult> {
+pub fn spot_simulation(data: Dataset, critical_value: f64, start: i64) -> Option<SimulationResult> {
     let mut equity: TimeSeries = TimeSeries::new(vec![]);
     let mut trades: Vec<Trade> = vec![];
     let mut position: Option<Position> = None;
@@ -26,7 +28,7 @@ pub fn spot_simulation(data: Dataset, critical_value: f64) -> Option<SimulationR
             let current_equity = equity.last().unwrap().value;
 
             // Check if the signal is in a bulllish state
-            if prev_signal_value > &critical_value {
+            if prev_signal_value > &critical_value && data_point.time() >= &start {
                 // Calculate the new equity value
                 let price_factor_change = *data_point.price() / prev_price_value;
                 let new_equity = current_equity * price_factor_change;
@@ -83,7 +85,7 @@ pub fn spot_simulation(data: Dataset, critical_value: f64) -> Option<SimulationR
                 }
             }
         } else {
-            if data_point.signal() > &critical_value {
+            if data_point.signal() > &critical_value && data_point.time() >= &start {
                 position = Some({
                     Position {
                         index: i,

@@ -36,18 +36,18 @@ export const DEFAULT_CROSSHAIR_OPTIONS: CrosshairOptions = {
 }
 
 export const DEFAULT_HORZ_SCALE_OPTIONS = {
-    rightOffset: 0,
+    rightOffset: 1000,
     barSpacing: 6,
     minBarSpacing: 0.5,
-    fixLeftEdge: true,
+    fixLeftEdge: false,
     fixRightEdge: true,
     lockVisibleTimeRangeOnResize: true,
-    rightBarStaysOnScroll: false,
+    rightBarStaysOnScroll: true,
     borderVisible: true,
     borderColor: "#2B2B43",
     visible: true,
-    timeVisible: true,
-    secondsVisible: true,
+    timeVisible: false,
+    secondsVisible: false,
     shiftVisibleRangeOnNewBar: true,
     allowShiftVisibleRangeOnWhitespaceReplacement: false,
     ticksVisible: false,
