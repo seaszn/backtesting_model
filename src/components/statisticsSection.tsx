@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react"
-import { StatisticValue, StatisticValueProps } from "./statisticsValue"
-import { ChevronDown, ChevronLeft } from "lucide-react"
+import { StatisticValueProps } from "./statisticsValue"
+import { ChevronDown } from "lucide-react"
 import { StatisticDateProps } from "./statisticsDate";
 
 interface StatisticsSectionProps<T extends number> {
@@ -13,7 +13,7 @@ interface StatisticsSectionProps<T extends number> {
 
 export function StatisticsSection<T extends number>(props: StatisticsSectionProps<T>) {
     const [loading, updateLoading] = useState(true);
-    const [collapsed, updateCollapsed] = useState(true);
+    const [collapsed, updateCollapsed] = useState(props.defaultCollapsed);
     const containerRef = useRef<any | undefined>();
 
     useEffect(() => {
