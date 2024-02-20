@@ -12,8 +12,8 @@ pub struct DataRequest {
 
 #[tauri::command]
 pub fn get_data_from_file(path: &str) -> Result<DataRequest, String> {
-    if let Ok(mut parsed) = read_from_csv::<DataEntry>(path) {
-        parsed.sort_by(|a, b| a.time().partial_cmp(&b.time()).unwrap());
+    if let Ok(parsed) = read_from_csv::<DataEntry>(path) {
+        // parsed.sort_by(|a, b| a.time().partial_cmp(&b.time()).unwrap());
 
         let price_data = TimeSeries::new(
             parsed
