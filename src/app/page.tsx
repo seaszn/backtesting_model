@@ -297,7 +297,7 @@ export default function Home() {
                           {/* Statistics Section */}
                           <StatisticsSection header='Trades' defaultCollapsed={true} collapsable={true}>
                             {results.trades.map((x, index) => (
-                              <StatisticsSection header={`Trade #${index + 1}`} >
+                              <StatisticsSection key={index} header={`Trade #${index + 1}`} >
                                 <StatisticDate name='Open Date' value={priceSeries?.[x.open]?.time || 'n.a.'} />
                                 <StatisticDate name='Close Date' value={priceSeries?.[x.close]?.time || 'n.a.'} />
                                 <StatisticValue suffix='%' name='Max Drawdown' value={x.max_drawdown || 0} />

@@ -59,7 +59,7 @@ export function TvChart(properties: TvChartProperties) {
                 chart?.timeScale().unsubscribeVisibleTimeRangeChange(onVisibleRangeChanged);
             }
         }
-    }, [globalState, chart])
+    }, [globalState, chart, onVisibleRangeChanged, onGlobalCrosshairMove])
 
     useEffect(() => {
         // Initialize the chart
