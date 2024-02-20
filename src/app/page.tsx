@@ -48,7 +48,7 @@ export default function Home() {
 
   useEffect(() => {
     if (file) {
-      invoke<DataRequest>('get_data_from_file', { path: file, start: new Date(startDate.toString()).valueOf() / 1000 }).then(response => {
+      invoke<DataRequest>('get_data_from_file', { path: file }).then(response => {
         updatePriceSeries(response.price_series.data.map<ISeries>(x => {
           return {
             time: new Date(x.time * 1000).toISOString().split('T')[0],

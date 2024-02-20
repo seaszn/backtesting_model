@@ -27,13 +27,14 @@ export interface TvChartReference {
 export function TvChart(properties: TvChartProperties) {
     const globalState = useGlobalChartState();
 
+    const [mouseOver, updateMouseOver] = useState(false);
     const [autoScale, setAutoScale] = useState(true);
     const [logScale, setLogScale] = useState(properties.defaultLog || false);
 
-    const [layoutOptions, updateLayoutOptions] = useState<LayoutOptions>(properties?.layout || DEFAULT_LAYOUT_OPTIONS);
-    const [gridOptions, updateGridOptions] = useState<GridOptions>(properties?.grid || DEFAULT_GRID_OPTIONS);
-    const [crosshairOptions, updateCrosshairOptions] = useState<CrosshairOptions>(properties?.crosshair || DEFAULT_CROSSHAIR_OPTIONS);
-    const [horzScaleOptions, updateHorzScaleOptions] = useState<HorzScaleOptions>(properties?.horzScale || DEFAULT_HORZ_SCALE_OPTIONS);
+    const [layoutOptions] = useState<LayoutOptions>(properties?.layout || DEFAULT_LAYOUT_OPTIONS);
+    const [gridOptions] = useState<GridOptions>(properties?.grid || DEFAULT_GRID_OPTIONS);
+    const [crosshairOptions] = useState<CrosshairOptions>(properties?.crosshair || DEFAULT_CROSSHAIR_OPTIONS);
+    const [horzScaleOptions] = useState<HorzScaleOptions>(properties?.horzScale || DEFAULT_HORZ_SCALE_OPTIONS);
     const [priceScaleOptions, updatePriceScaleOptions] = useState<PriceScaleOptions>(properties?.priceScale || DEFAULT_PRICE_SCALE_OPTIONS);
 
     const [chart, updateChart] = useState<IChartApi>();
@@ -152,7 +153,6 @@ export function TvChart(properties: TvChartProperties) {
         }
     }, [properties.equityCurve])
 
-
     useEffect(() => {
         if (properties.data && dataSeries) {
             dataSeries.setData(properties.data)
@@ -172,7 +172,7 @@ export function TvChart(properties: TvChartProperties) {
             globalState.updateHorzCrosshair(event.time);
         }
     }
-
+    
     function onVisibleRangeChanged(range: Range<Time> | null) {
         if (range) {
             globalState.updateVisibleRange(range);
@@ -180,11 +180,11 @@ export function TvChart(properties: TvChartProperties) {
     }
 
     function onGlobalCrosshairMove(time: Time) {
-        if (chart && dataSeries) {
+        if (chart && dataSeries && !mouseOver) {
             chart.setCrosshairPosition(0, time, dataSeries)
         }
     }
-
+    
     function onGlobalVisibleRangeChanged(time: Range<Time>) {
         if (chart && dataSeries) {
             chart.timeScale().setVisibleRange(time);
@@ -206,7 +206,7 @@ export function TvChart(properties: TvChartProperties) {
     }
 
     return (
-        <div className=" w-full h-full relative">
+        <div onMouseEnter={() => updateMouseOver(true)} onMouseLeave={() => updateMouseOver(false)} className=" w-full h-full relative">
             <div className=" absolute flex z-40  justify-end bottom-2 bg-neutral-950  gap-1 p-1  right-2 w-12 h-8  text-neutral-500 hover:text-neutral-300">
                 <button onClick={() => setAutoScale(!autoScale)} className={`h-5 w-5 transition-colors rounded-sm flex border mt-0.5 border-neutral-700`}>
                     <h1 className="text-sm m-auto font-semibold">A</h1>

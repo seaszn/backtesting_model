@@ -1,5 +1,3 @@
-use serde_json::StreamDeserializer;
-
 use crate::data::{
     simulator::types::{
         position::Position,
