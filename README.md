@@ -1,27 +1,54 @@
-## Getting Started
-Download the appropiate installer from the [https://github.com/seaszn/backtesting_model/releases](/releases)
+
+# Orion alpha v.0.1.0
+
+A comprehensive backtesting model, using price and signal simulate and analyze fincancial portfolios.
 
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Installation
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Download and run the installer bellow
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+[![Release](https://github.com/seaszn/backtesting_model/actions/workflows/main.yml/badge.svg?event=release)](https://github.com/seaszn/backtesting_model/actions/workflows/main.yml)
 
-## Learn More
 
-To learn more about Next.js, take a look at the following resources:
+## Usage
+All data imported into the model should adhere [this format](https://github.com/seaszn/backtesting_model/blob/main/format.csv).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Failing to do so can result in unexpected behaviour.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+## Features
+By using rust for the backend of the software, we take advantage of enhanced performance and low memory usage.
 
-## Deploy on Vercel
+Enabling you to perform multiple portfolio simulations in a row in timely and smooth fashion.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+The simulation metrics include:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+#### Portfolio Statistics
+- Total number of trades
+- Maximum Equity Drawdown %
+- Maximum Intra Trade Drawdown %
+- Sharpe Ratio
+- Sortino Ratio
+- Omega Ratio
+- Profit factor
+- % Proftiable
 
-## Tello
-https://trello.com/b/OH8pWqoT/backtesting-model
+#### Intra Trade Statistics
+- Maximum Equity Drawdown %
+- Maximum Intra Trade Drawdown %
+- Sharpe Ratio
+- Sortino Ratio
+- Omega Ratio
+
+#### Extras
+- Custom data import
+- A complete analysis for every trade
+- The focus button allows you to quickly zoom in, and take a close look on what's going on.
+- Statistics color coding, enabling you to get an idea of what's going on in a blink of an eye.
+- Custom critical values, allowing you to check out some last minute tweaks, without having to go back into the sheet.
+
+
+## Screenshot
+
+![App Screenshot](https://raw.githubusercontent.com/seaszn/backtesting_model/main/images/screenshot.png)
+
