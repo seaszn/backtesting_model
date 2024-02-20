@@ -6,7 +6,10 @@ use crate::data::{
     types::{data_point::DataPoint, dataset::Dataset, time_series::TimeSeries},
 };
 
-use super::types::simulation_result::{SimulationResult, TradeResult};
+use super::types::{
+    position,
+    simulation_result::{SimulationResult, TradeResult},
+};
 
 const STARTING_CAPITAL: f64 = 1f64;
 
@@ -38,7 +41,7 @@ pub fn spot_simulation(data: Dataset, critical_value: f64, start: i64) -> Option
                 });
 
                 // Check if the signal just flipped from short to long, if so, open a new position
-                if i > 1 && data[i - 2].signal() < &0f64 {
+                if position.is_none() {
                     position = Some({
                         Position {
                             index: i,
@@ -56,30 +59,28 @@ pub fn spot_simulation(data: Dataset, critical_value: f64, start: i64) -> Option
                 });
 
                 // Check if the signal just flipped short from long, if so, log the trade
-                if i > 1 && data[i - 2].signal() > &critical_value {
-                    if let Some(current_position) = position {
-                        let intra_trade_equity = equity.take_from(current_position.index, i);
+                if let Some(current_position) = position {
+                    let intra_trade_equity = equity.take_from(current_position.index, i);
 
-                        trades.push(Trade::new(
-                            TradeExecution {
-                                index: current_position.index,
-                                time: current_position.time,
-                                price: *data[current_position.index].price(),
-                                value: current_position.value,
-                                volume: current_position.volume,
-                            },
-                            TradeExecution {
-                                index: i,
-                                time: *data_point.time(),
-                                price: *data_point.price(),
-                                value: current_equity,
-                                volume: current_equity / *data_point.price(),
-                            },
-                            intra_trade_equity,
-                        ));
+                    trades.push(Trade::new(
+                        TradeExecution {
+                            index: current_position.index,
+                            time: current_position.time,
+                            price: *data[current_position.index].price(),
+                            value: current_position.value,
+                            volume: current_position.volume,
+                        },
+                        TradeExecution {
+                            index: i,
+                            time: *data_point.time(),
+                            price: *data_point.price(),
+                            value: current_equity,
+                            volume: current_equity / *data_point.price(),
+                        },
+                        intra_trade_equity,
+                    ));
 
-                        position = None;
-                    }
+                    position = None;
                 }
             }
         } else {
@@ -102,7 +103,8 @@ pub fn spot_simulation(data: Dataset, critical_value: f64, start: i64) -> Option
     }
 
     // Calculate all the simulation results
-    let profit_loss: f64 = trades.iter().map(|x| x.profit_loss()).sum::<f64>() / (STARTING_CAPITAL / 100f64);
+    let profit_loss: f64 =
+        trades.iter().map(|x| x.profit_loss()).sum::<f64>() / (STARTING_CAPITAL / 100f64);
     let max_percent_drawdown = equity.max_percent_drawdown()?;
     let max_intra_trade_drawdown = trades
         .iter()
@@ -140,8 +142,24 @@ pub fn spot_simulation(data: Dataset, critical_value: f64, start: i64) -> Option
         })
         .collect();
 
-    // Return the simulation result
-    Some(SimulationResult {
+    if let Some(position) = position {
+        // Return the simulation result
+        return Some(SimulationResult {
+            position: Some(position.index),
+            equity_curve: equity,
+            profit_loss,
+            max_percent_drawdown,
+            max_intra_trade_drawdown,
+            performance_ratios,
+            percent_profitable,
+            profit_factor,
+            n_trades,
+            trades: trade_results,
+        });
+    }
+
+    return Some(SimulationResult {
+        position: None,
         equity_curve: equity,
         profit_loss,
         max_percent_drawdown,
@@ -151,5 +169,5 @@ pub fn spot_simulation(data: Dataset, critical_value: f64, start: i64) -> Option
         profit_factor,
         n_trades,
         trades: trade_results,
-    })
+    });
 }

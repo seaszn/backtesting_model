@@ -29,6 +29,7 @@ anyhow = "1.0.75"
 lazy_static = "1.4.0"
 native-dialog = "0.7.0"
 num-traits = "0.2.18"
+open = "5.0.1"
 
 
 [features]

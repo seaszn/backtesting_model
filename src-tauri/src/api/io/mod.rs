@@ -19,3 +19,9 @@ pub fn open_file_dialog() -> Result<String, String> {
         Err(err) => Err(err.to_string()),
     }
 }
+
+#[tauri::command]
+pub fn open_external(path: &str) {
+    let _ = open::that(path);
+}   
+

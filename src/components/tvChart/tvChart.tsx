@@ -1,6 +1,6 @@
 'use client';
 
-import { CrosshairOptions, DeepPartial, GridOptions, HorzScaleOptions, IChartApi, ISeriesApi, InternalHorzScaleItem, LayoutOptions, LineData, LineSeriesOptions, LineStyleOptions, MouseEventParams, PriceScaleMode, PriceScaleOptions, Range, SeriesOptionsCommon, Time, WhitespaceData, createChart } from "lightweight-charts";
+import { CrosshairOptions, DeepPartial, GridOptions, HorzScaleOptions, IChartApi, ISeriesApi, InternalHorzScaleItem, LayoutOptions, LineData, LineSeriesOptions, LineStyleOptions, MouseEventParams, PriceScaleMode, PriceScaleOptions, Range, SeriesMarker, SeriesOptionsCommon, Time, WhitespaceData, createChart } from "lightweight-charts";
 import { useEffect, useRef, useState } from "react";
 import { DEFAULT_CROSSHAIR_OPTIONS, DEFAULT_GRID_OPTIONS, DEFAULT_HORZ_SCALE_OPTIONS, DEFAULT_LAYOUT_OPTIONS, DEFAULT_PRICE_SCALE_OPTIONS } from "./defaults";
 import { TimeSeries } from "@/app/types";
@@ -8,6 +8,7 @@ import { useGlobalChartState } from "./useChartState";
 
 export interface TvChartProperties {
     data: TimeSeries;
+    markers?: SeriesMarker<Time>[],
     equityCurve?: TimeSeries;
     criticalSeries?: TimeSeries;
     layout?: LayoutOptions,
@@ -117,6 +118,10 @@ export function TvChart(properties: TvChartProperties) {
             updateEquitySeries(series);
         }
 
+        if(properties.markers){
+            dataSeries.setMarkers(properties.markers)
+        }
+
         // Subscribe to the crosshair move event
         chart.subscribeCrosshairMove(onCrosshairMove);
 
@@ -146,6 +151,12 @@ export function TvChart(properties: TvChartProperties) {
             criticalSeries.setData(properties.criticalSeries)
         }
     }, [properties.criticalSeries])
+
+    useEffect(() => {
+        if(properties.markers && dataSeries){
+            dataSeries.setMarkers(properties.markers)
+        }
+    }, [properties.markers])
 
     useEffect(() => {
         if (properties.equityCurve && equitySeries) {

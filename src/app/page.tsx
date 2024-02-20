@@ -5,7 +5,7 @@ import { invoke } from '@tauri-apps/api/tauri'
 import { ChangeEvent, useEffect, useState } from 'react';
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { SimulationType } from '@/hooks/useSimulator';
-import { Bot, CandlestickChart, Check, ChevronLeft, ChevronRight, File, Loader2Icon, TrendingUp } from 'lucide-react';
+import { Bot, CandlestickChart, Check, ChevronLeft, ChevronRight, File, Github, Loader2Icon, TrendingUp } from 'lucide-react';
 import { StatisticValue } from '@/components/statisticsValue';
 import { StatisticsSection } from '@/components/statisticsSection';
 import { DataRequest, ISeries, SimulationResult, TimeSeries } from './types';
@@ -14,8 +14,12 @@ import { ExclamationTriangleIcon } from '@heroicons/react/20/solid';
 import { Button, Calendar, CalendarCell, CalendarGrid, DateInput, DatePicker, DateSegment, Dialog, DialogTrigger, Group, Heading, Label, OverlayArrow, Popover, Switch } from 'react-aria-components';
 import { parseDate, CalendarDate } from '@internationalized/date';
 import { evaluateIntraTradeDrawdown, evaluateOmega, evaluatePercentProfitable, evaluateProfitFactor, evaluateSharpe, evaluateSortino } from './evaluation';
+import { useGlobalChartState } from '@/components/tvChart/useChartState';
+import { SeriesMarker, Time } from 'lightweight-charts';
 
 export default function Home() {
+  const globalChartState = useGlobalChartState();
+
   const [file, updateFile] = useState<string>()
   const [loading, updateLoading] = useState<boolean>(false)
   const [error, updateError] = useState<boolean>(false)
@@ -27,24 +31,6 @@ export default function Home() {
   const [priceSeries, updatePriceSeries] = useState<TimeSeries>();
   const [signalSeries, updateSignalSeries] = useState<TimeSeries>();
   const [criticalSeries, updateCriticalSeries] = useState<TimeSeries>();
-
-  function getEquityCurve(): TimeSeries | undefined {
-    return results?.equity_curve.data.map(x => {
-      return {
-        time: new Date(x.time * 1000).toISOString().split('T')[0],
-        value: x.value
-      }
-    });
-  }
-
-  function onFileDialogClicked() {
-    invoke<string>('open_file_dialog').then(path => {
-      if (path != '') {
-        updateFile(path);
-      }
-    })
-  }
-
 
   useEffect(() => {
     if (file) {
@@ -71,7 +57,7 @@ export default function Home() {
         }))
       });
     }
-  }, [file])
+  }, [file, startDate])
 
   useEffect(() => {
     if (priceSeries) {
@@ -100,6 +86,58 @@ export default function Home() {
     }
   }, [priceSeries, signalSeries, criticalSeries, startDate]);
 
+  function getEquityCurve(): TimeSeries | undefined {
+    return results?.equity_curve.data.map(x => {
+      return {
+        time: new Date(x.time * 1000).toISOString().split('T')[0],
+        value: x.value
+      }
+    });
+  }
+
+  function onFileDialogClicked() {
+    invoke<string>('open_file_dialog').then(path => {
+      if (path != '') {
+        updateFile(path);
+      }
+    })
+  }
+
+  function getMarkers(): SeriesMarker<Time>[] | undefined {
+    if (priceSeries && results) {
+      const result = results?.trades.flatMap<SeriesMarker<Time>>(x => [
+        { // Open
+          time: priceSeries[Math.max(0, x.open - 1)]?.time,
+          position: 'belowBar',
+          color: '#22c55e',
+          shape: 'arrowUp',
+          text: 'entry',
+        },
+        { // Close
+          time: priceSeries[Math.min(x.close - 1, priceSeries.length - 1)].time,
+          position: 'aboveBar',
+          color: '#e03f5e',
+          shape: 'arrowDown',
+          text: 'exit',
+        }
+      ])
+
+      if (results.position) {
+        result.push({ // Open
+          time: priceSeries[results.position].time,
+          position: 'belowBar',
+          color: '#22c55e',
+          shape: 'arrowUp',
+          text: 'entry',
+        })
+      }
+
+      if (result) {
+        return result;
+      }
+    }
+  }
+
   function handleChange(event: ChangeEvent<HTMLInputElement>) {
     if (event.target.value.match(/([+-]?(?=\.\d|\d)(?:\d+)?(?:\.?\d*))(?:[Ee]([+-]?\d+))?/i)) {
       updateCrossover(Number.parseFloat(event.target.value));
@@ -122,7 +160,7 @@ export default function Home() {
   }
 
   return (
-    <div className="h-screen w-screen bg-neutral-950">
+    <div className="h-screen bgrose w-screen bg-neutral-950">
       <div className='flex w-full h-full'>
         {/* Chart panels */}
         <PanelGroup autoSaveId='chart-container' direction='vertical'>
@@ -131,10 +169,10 @@ export default function Home() {
               <>
                 <Panel id='price-chart'>
                   <div className='h-full w-full'>
-                    <TvChart defaultLog={true} showTimeScale={false} data={priceSeries} equityCurve={getEquityCurve()} />
+                    <TvChart markers={getMarkers()} defaultLog={true} showTimeScale={false} data={priceSeries} equityCurve={getEquityCurve()} />
                   </div>
                 </Panel>
-                <PanelResizeHandle className='h-1 transition-colors hover:bg-neutral-500 active:bg-neutral-500 bg-neutral-700' />
+                <PanelResizeHandle className='h-1 transition-colors bggreen hover:bg-neutral-500 active:bg-neutral-500 bg-neutral-700' />
                 <Panel id='signal-chart'>
                   <div className='h-full w-full'>
                     <TvChart showTimeScale={true} data={signalSeries} criticalSeries={criticalSeries} />
@@ -155,18 +193,24 @@ export default function Home() {
             {/* Header */}
             <div className='flex justify-between w-full'>
               <h1 className=' text-xl font-semibold text-neutral-300 '>Backtesting Model</h1>
-              {loading ?
-                (
-                  <Loader2Icon className='animate-spinner-ease-spin w-5 h-5 -translate-y-1/2 my-auto text-indigo-500' strokeWidth={2} />
-                ) :
-                (
-                  error ? (
-                    <ExclamationTriangleIcon className=' w-5 h-5  my-auto text-rose-500' strokeWidth={2} />
-                  ) : (
-                    <Check className=' w-5 h-5  my-auto text-green-500' strokeWidth={2} />
+              <div className='flex gap-2'>
+
+                {loading ?
+                  (
+                    <Loader2Icon className='animate-spinner-ease-spin w-5 h-5 -translate-y-1/2 my-auto text-indigo-500' strokeWidth={2} />
+                  ) :
+                  (
+                    error ? (
+                      <ExclamationTriangleIcon className=' w-5 h-5  my-auto text-rose-500' strokeWidth={2} />
+                    ) : (
+                      <Check className=' w-5 h-5  my-auto text-green-500' strokeWidth={2} />
+                    )
                   )
-                )
-              }
+                }
+                <button onClick={() => invoke('open_external', {path: "https://github.com/seaszn/backtesting_model"})} className=' my-auto'>
+                  <Github className=' w-5 h-5  my-auto text-indigo-500' strokeWidth={2} />
+                </button>
+              </div>
             </div>
             <div className='overflow-y-auto border-t border-neutral-700 '>
               {/* Configuration Section */}
@@ -184,7 +228,7 @@ export default function Home() {
                   <div className=' w-full h-7 mt-4 flex transition-colors flex-row-reverse focus-within:border-indigo-500 gap-2 pt-0.5 overflow-hidden overflow-ellipsis border-b border-neutral-700'>
                     <div className=' grow flex h-full overflow-hidden text-neutral-300 overflow-ellipsis shrink'>
                       <label className='text-xs my-auto shrink-0 mr-4 '>Crossover Value:</label>
-                      <input disabled={file == undefined}  type='number' onChange={handleChange} value={crossover} min={-1e9} max={1e9} step={0.01} className=' num-input p-0 disabled:text-neutral-500 text-right shrink bg-transparent w-24 text-xs my-auto focus:outline-none grow' />
+                      <input disabled={file == undefined} type='number' onChange={handleChange} value={crossover} min={-1e9} max={1e9} step={0.01} className=' num-input p-0 disabled:text-neutral-500 text-right shrink bg-transparent w-24 text-xs my-auto focus:outline-none grow' />
                     </div>
                   </div>
                   <div className=' w-full h-7 mt-4 flex transition-colors flex-row-reverse focus-within:border-indigo-500 gap-2 pt-0.5  border-b border-neutral-700'>
@@ -262,6 +306,14 @@ export default function Home() {
                                 <StatisticValue name='Sortino Ratio' value={x.performance_ratios.sortino} />
                                 <StatisticValue name='Omega Ratio' value={x.performance_ratios.omega} />
                                 <StatisticValue suffix='%' name='% Net Profit' value={x.perc_profit_loss} />
+                                <button onClick={() => {
+                                  priceSeries && globalChartState.updateVisibleRange({
+                                    from: priceSeries[Math.max(0, x.open - 10)].time,
+                                    to: priceSeries[Math.min(priceSeries.length - 1, x.close + 10)].time,
+                                  })
+                                }} className=' mt-4 w-full h-8 text-xs border hover:bg-indigo-500 hover:text-neutral-300 transition-colors active:text-neutral-300 active:bg-indigo-600 active:border-indigo-600 border-indigo-500 text-indigo-500 font-semibold'>
+                                  Focus
+                                </button>
                               </StatisticsSection>
                             ))}
                           </StatisticsSection>

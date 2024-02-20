@@ -20,6 +20,7 @@ interface PerformanceRatios{
 }
 
 export interface SimulationResult{
+    position: number | undefined
     equity_curve: { data: { time: number, value: number }[] }
     max_intra_trade_drawdown: number,
     max_percent_drawdown: number,
