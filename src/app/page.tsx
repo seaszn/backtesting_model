@@ -139,7 +139,7 @@ export default function Home() {
   }
 
   function handleChange(event: ChangeEvent<HTMLInputElement>) {
-    if (event.target.value.match(/([+-]?(?=\.\d|\d)(?:\d+)?(?:\.?\d*))(?:[Ee]([+-]?\d+))?/i)) {
+    if (event.target.value.match(/^[+-]?(\d+(\.\d*)?|\.\d+)$/)) {
       updateCrossover(Number.parseFloat(event.target.value));
       updateCriticalValue(Number.parseFloat(event.target.value))
     }
@@ -215,23 +215,23 @@ export default function Home() {
             <div className='overflow-y-auto border-t border-neutral-700 '>
               {/* Configuration Section */}
               <div className=''>
-                <div className='p-4 border py-4 border-neutral-700'>
-                  <div className=' w-full h-7 flex flex-row-reverse gap-2 pt-0.5 overflow-hidden overflow-ellipsis border-b border-neutral-700'>
-                    <button tabIndex={-1} onClick={onFileDialogClicked} className='shrink-0 transition-colors  hover:bg-neutral-700 h-6 w-6 rounded-t-sm text-neutral-400'>
+                <div className='p-4 px-3 border py-4 border-neutral-700'>
+                  <button onClick={onFileDialogClicked} className=' px-1 w-full h-7 flex flex-row-reverse gap-2 pt-0.5 overflow-hidden overflow-ellipsis border-b hover:border-indigo-500 active:border-indigo-600 border-neutral-700'>
+                    <div tabIndex={-1} className='shrink-0 transition-colors   flex h-6 w-6 rounded-t-sm text-neutral-400'>
                       <File className=' w-4 h-4 m-auto' strokeWidth={2} />
-                    </button>
-                    <div className=' grow h-full overflow-hidden text-neutral-300 overflow-ellipsis w-full shrink'>
+                    </div>
+                    <div className=' px-1 grow h-full overflow-hidden text-neutral-300 overflow-ellipsis w-full shrink'>
                       <label className='text-xs my-auto shrink-0 mr-4 '>File:</label>
                       <label className={`text-xs my-auto shrink-0 ${file ? 'text-neutral-300' : 'text-neutral-500'}`}>{file || 'Please select a file...'}</label>
                     </div>
-                  </div>
-                  <div className=' w-full h-7 mt-4 flex transition-colors flex-row-reverse focus-within:border-indigo-500 gap-2 pt-0.5 overflow-hidden overflow-ellipsis border-b border-neutral-700'>
+                  </button>
+                  <div className='px-1 w-full h-7 mt-4 flex transition-colors flex-row-reverse focus-within:border-indigo-500 gap-2 pt-0.5 overflow-hidden overflow-ellipsis border-b border-neutral-700'>
                     <div className=' grow flex h-full overflow-hidden text-neutral-300 overflow-ellipsis shrink'>
                       <label className='text-xs my-auto shrink-0 mr-4 '>Crossover Value:</label>
                       <input disabled={file == undefined} type='number' onChange={handleChange} value={crossover} min={-1e9} max={1e9} step={0.01} className=' num-input p-0 disabled:text-neutral-500 text-right shrink bg-transparent w-24 text-xs my-auto focus:outline-none grow' />
                     </div>
                   </div>
-                  <div className=' w-full h-7 mt-4 flex transition-colors flex-row-reverse focus-within:border-indigo-500 gap-2 pt-0.5  border-b border-neutral-700'>
+                  <div className='px-1 w-full h-7 mt-4 flex transition-colors flex-row-reverse focus-within:border-indigo-500 gap-2 pt-0.5  border-b border-neutral-700'>
                     <div className=' grow w-full flex h-full text-neutral-300 overflow-ellipsis shrink'>
                       <label className='text-xs my-auto shrink-0 mr-4 '>Starting date:</label>
                       <DialogTrigger>
