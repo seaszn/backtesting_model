@@ -6,10 +6,7 @@ A comprehensive backtesting model, using price and signal simulate and analyze f
 
 ## Installation
 
-Download and run the installer bellow
-
-[![Release](https://github.com/seaszn/backtesting_model/actions/workflows/main.yml/badge.svg?event=release)](https://github.com/seaszn/backtesting_model/actions/workflows/main.yml)
-
+Download and run the [the installer](https://github.com/seaszn/backtesting_model/releases/tag/main)
 
 ## Usage
 All data imported into the model should adhere [this format](https://github.com/seaszn/backtesting_model/blob/main/format.csv).
