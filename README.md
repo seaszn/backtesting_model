@@ -1,5 +1,5 @@
 ## Getting Started
-Download the appropiate installer from the [https://github.com/seaszn/backtesting_model/releases](www.google.com)
+Download the appropiate installer from the [https://github.com/seaszn/backtesting_model/releases](/releases)
 
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
