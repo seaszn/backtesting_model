@@ -7,7 +7,7 @@
     "distDir": "../out"
   },
   "package": {
-    "productName": "freesonax",
+    "productName": "orion-alpha",
     "version": "0.1.0"
   },
   "tauri": {
@@ -47,7 +47,7 @@
         "icons/icon.icns",
         "icons/icon.ico"
       ],
-      "identifier": "com.tauri.dev",
+      "identifier": "com.orion.dev",
       "longDescription": "",
       "macOS": {
         "entitlements": null,
