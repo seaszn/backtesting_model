@@ -13,7 +13,7 @@ import { StatisticDate } from '@/components/statisticsDate';
 import { ExclamationTriangleIcon } from '@heroicons/react/20/solid';
 import { Button, Calendar, CalendarCell, CalendarGrid, DateInput, DatePicker, DateSegment, Dialog, DialogTrigger, Group, Heading, Label, OverlayArrow, Popover, Switch } from 'react-aria-components';
 import { parseDate, CalendarDate } from '@internationalized/date';
-import { evaluateIntraTradeDrawdown, evaluateOmega, evaluatePercentProfitable, evaluateProfitFactor, evaluateSharpe, evaluateSortino } from './evaluation';
+import { evaluateIntraTradeDrawdown, evaluateNTrades, evaluateOmega, evaluatePercentProfitable, evaluateProfitFactor, evaluateSharpe, evaluateSortino } from './evaluation';
 import { useGlobalChartState } from '@/components/tvChart/useChartState';
 import { SeriesMarker, Time } from 'lightweight-charts';
 
@@ -23,11 +23,11 @@ export default function Home() {
   const [file, updateFile] = useState<string>()
   const [loading, updateLoading] = useState<boolean>(false)
   const [error, updateError] = useState<boolean>(false)
-  const [crossover, updateCrossover] = useState(0);
   const [startDate, updateStartDate] = useState(parseDate('2018-01-01'));
   const [results, updateResults] = useState<SimulationResult>();
   const [criticalValue, updateCriticalValue] = useState(0.0);
 
+  const [paddingSeries, updatePaddingSeries] = useState<TimeSeries>();
   const [priceSeries, updatePriceSeries] = useState<TimeSeries>();
   const [signalSeries, updateSignalSeries] = useState<TimeSeries>();
   const [criticalSeries, updateCriticalSeries] = useState<TimeSeries>();
@@ -79,7 +79,9 @@ export default function Home() {
         updateResults(response)
         updateLoading(false);
 
-      }).catch(() => {
+      }).catch((e) => {
+        console.log(e);
+
         updateError(true)
         updateLoading(false);
       });
@@ -111,24 +113,24 @@ export default function Home() {
           position: 'belowBar',
           color: '#22c55e',
           shape: 'arrowUp',
-          text: 'entry',
+          text: 'entry on close',
         },
         { // Close
           time: priceSeries[Math.min(x.close - 1, priceSeries.length - 1)].time,
           position: 'aboveBar',
           color: '#e03f5e',
           shape: 'arrowDown',
-          text: 'exit',
+          text: 'exit on close',
         }
       ])
 
       if (results.position) {
         result.push({ // Open
-          time: priceSeries[results.position].time,
+          time: priceSeries[results.position - 1].time,
           position: 'belowBar',
           color: '#22c55e',
           shape: 'arrowUp',
-          text: 'entry',
+          text: 'entry on close',
         })
       }
 
@@ -139,26 +141,20 @@ export default function Home() {
   }
 
   function handleChange(event: ChangeEvent<HTMLInputElement>) {
-    if (event.target.value.match(/^[+-]?(\d+(\.\d*)?|\.\d+)$/)) {
-      updateCrossover(Number.parseFloat(event.target.value));
-      updateCriticalValue(Number.parseFloat(event.target.value))
-    }
+      try {
+        let value = Number.parseFloat(event.target.value)
+
+        if(!Number.isNaN(value)){
+          updateCriticalValue(Number.parseFloat(event.target.value))
+        }
+      }
+      catch { }
   };
 
   function onUpdateStartDate(e: CalendarDate) {
     if (dateIsAvailable(e)) {
       updateStartDate(e);
     }
-  }
-
-  function enableScroll(){
-
-  }
-
-  function disableScroll(){
-    document.addEventListener('wheel', (ev) => {
-      // passive: false,
-    })
   }
 
   function dateIsAvailable(e: CalendarDate) {
@@ -217,16 +213,12 @@ export default function Home() {
                     )
                   )
                 }
-                <button onClick={() => invoke('open_external', {path: "https://github.com/seaszn/backtesting_model"})} className=' my-auto'>
+                <button onClick={() => invoke('open_external', { path: "https://github.com/seaszn/backtesting_model" })} className=' my-auto'>
                   <Github className=' w-5 h-5  my-auto text-indigo-500' strokeWidth={2} />
                 </button>
               </div>
             </div>
-            <div onWheelCapture={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              return false;
-            }} className='overflow-y-auto border-t border-neutral-700 '>
+            <div className='border-t  flex flex-col border-neutral-700 ' style={{ height: 'calc(100% - 1.5rem)' }}>
               {/* Configuration Section */}
               <div className=''>
                 <div className='p-4 px-3 border py-4 border-neutral-700'>
@@ -239,10 +231,10 @@ export default function Home() {
                       <label className={`text-xs my-auto shrink-0 ${file ? 'text-neutral-300' : 'text-neutral-500'}`}>{file || 'Please select a file...'}</label>
                     </div>
                   </div>
-                  <div  className='px-1 w-full h-7 mt-4 flex transition-colors flex-row-reverse focus-within:border-indigo-500 gap-2 pt-0.5 overflow-hidden overflow-ellipsis border-b border-neutral-700'>
+                  <div className='px-1 w-full h-7 mt-4 flex transition-colors flex-row-reverse focus-within:border-indigo-500 hover:border-indigo-500 gap-2 pt-0.5 overflow-hidden overflow-ellipsis border-b border-neutral-700'>
                     <div className=' grow flex h-full overflow-hidden text-neutral-300 overflow-ellipsis shrink'>
                       <label className='text-xs my-auto shrink-0 mr-4 '>Crossover Value:</label>
-                      <input disabled={file == undefined} type='number' onChange={handleChange} value={crossover} min={-1e9} max={1e9} step={0.01} className=' num-input p-0 bg-red-400 disabled:text-neutral-500 pr-1 text-right shrink bg-transparent w-24 text-xs h-full focus:outline-none grow' />
+                      <input disabled={file == undefined} type='number' onChange={handleChange} value={criticalValue} min={-1e9} max={1e9} step={0.01} className=' num-input p-0 disabled:text-neutral-500 pr-1 text-right shrink bg-transparent w-24 text-xs h-full focus:outline-none grow' />
                     </div>
                   </div>
                   <div className='px-1 w-full h-7 mt-4 flex transition-colors flex-row-reverse focus-within:border-indigo-500 gap-2 pt-0.5  border-b border-neutral-700'>
@@ -277,65 +269,66 @@ export default function Home() {
                   </div>
                 </div>
               </div>
-              <div className=''>
-                <div className='h-auto relative w-full overflow-hidden'>
-                  <div className={`h-full w-full absolute bg-neutral-950 transition-opacity z-40 flex ${results ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
-                    <div className={`text-center mx-auto flex flex-col p-4 w-56 h-56 mt-24`}>
-                      {
-                        file == undefined && (
-                          <>
-                            <Bot className='grow w-20 h-20  m-auto text-neutral-500' strokeWidth={1} />
-                            <p className='text-lg text-neutral-500'>Please select a file to get started.</p>
-                          </>
-                        )
-                      }
-                    </div>
-                  </div>
-                  <div>
+              <div className='grow shrink mt-6 border-t border-neutral-700 relative w-full overflow-y-auto'>
+                <div className={`h-full w-full absolute bg-neutral-950 transition-opacity z-40 flex ${results ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+                  <div className={`text-center mx-auto flex flex-col p-4 w-56 h-56 mt-24`}>
                     {
-                      results && (
+                      file == undefined && (
                         <>
-                          {/* Statistics Section */}
-                          <StatisticsSection header='Statistics' collapsable={true}>
-                            <StatisticValue evaluate={evaluateIntraTradeDrawdown} suffix='%' name='Intra Trade Max Drawdown' value={results.max_intra_trade_drawdown} />
-                            <StatisticValue evaluate={evaluateSharpe} name='Sharpe Ratio' value={results.performance_ratios.sharpe} />
-                            <StatisticValue evaluate={evaluateSortino} name='Sortino Ratio' value={results.performance_ratios.sortino} />
-                            <StatisticValue evaluate={evaluateOmega} name='Omega Ratio' value={results.performance_ratios.omega} />
-                            <StatisticValue evaluate={evaluateProfitFactor} name='Profit Factor' value={results.profit_factor} />
-                            <StatisticValue evaluate={evaluatePercentProfitable} suffix='%' name='% Profitable' value={results.percent_profitable} />
-                            <StatisticValue suffix='%' name='Equity Max Drawdown' value={results.max_percent_drawdown} />
-                            <StatisticValue suffix='%' name='Net Profit' value={results.profit_loss} />
-                            <StatisticValue name='# of Trades' value={results.n_trades} />
-                          </StatisticsSection>
-
-                          {/* Statistics Section */}
-                          <StatisticsSection header='Trades' defaultCollapsed={true} collapsable={true}>
-                            {results.trades.map((x, index) => (
-                              <StatisticsSection key={index} header={`Trade #${index + 1}`} >
-                                <StatisticDate name='Open Date' value={priceSeries?.[x.open]?.time || 'n.a.'} />
-                                <StatisticDate name='Close Date' value={priceSeries?.[x.close]?.time || 'n.a.'} />
-                                <StatisticValue suffix='%' name='Max Drawdown' value={x.max_drawdown || 0} />
-                                <StatisticValue suffix='%' name='Max Intra Drawdown' value={x.max_intra_trade_drawdown} />
-                                <StatisticValue name='Sharpe Ratio' value={x.performance_ratios.sharpe} />
-                                <StatisticValue name='Sortino Ratio' value={x.performance_ratios.sortino} />
-                                <StatisticValue name='Omega Ratio' value={x.performance_ratios.omega} />
-                                <StatisticValue suffix='%' name='% Net Profit' value={x.perc_profit_loss} />
-                                <button onClick={() => {
-                                  priceSeries && globalChartState.updateVisibleRange({
-                                    from: priceSeries[Math.max(0, x.open - 10)].time,
-                                    to: priceSeries[Math.min(priceSeries.length - 1, x.close + 10)].time,
-                                  })
-                                }} className=' mt-4 w-full h-8 text-xs border hover:bg-indigo-500 hover:text-neutral-300 transition-colors active:text-neutral-300 active:bg-indigo-600 active:border-indigo-600 border-indigo-500 text-indigo-500 font-semibold'>
-                                  Focus
-                                </button>
-                              </StatisticsSection>
-                            ))}
-                          </StatisticsSection>
+                          <Bot className='grow w-20 h-20  m-auto text-neutral-500' strokeWidth={1} />
+                          <p className='text-lg text-neutral-500'>Please select a file to get started.</p>
                         </>
                       )
                     }
                   </div>
                 </div>
+                <div className=' w-full h-full grow'>
+                  {
+                    results && (
+                      <div className='w-full  h-full overflow-y-auto'>
+                        {/* Statistics Section */}
+                        <StatisticsSection header='Statistics' collapsable={false}>
+                          <StatisticValue evaluate={evaluateIntraTradeDrawdown} suffix='%' name='Intra Trade Max Drawdown' value={results.max_intra_trade_drawdown} />
+                          <StatisticValue evaluate={evaluateSharpe} name='Sharpe Ratio' value={results.performance_ratios.sharpe} />
+                          <StatisticValue evaluate={evaluateSortino} name='Sortino Ratio' value={results.performance_ratios.sortino} />
+                          <StatisticValue evaluate={evaluateOmega} name='Omega Ratio' value={results.performance_ratios.omega} />
+                          <StatisticValue evaluate={evaluateProfitFactor} name='Profit Factor' value={results.profit_factor} />
+                          <StatisticValue evaluate={evaluatePercentProfitable} suffix='%' name='% Profitable' value={results.percent_profitable} />
+                          <StatisticValue evaluate={evaluateNTrades} name='# of Trades' value={results.n_trades} />
+                          <StatisticValue suffix='%' name='Equity Max Drawdown' value={results.max_percent_drawdown} />
+                          <StatisticValue suffix='%' name='Net Profit' value={results.profit_loss} />
+                        </StatisticsSection>
+
+                        {/* Statistics Section */}
+                        <StatisticsSection header='Trades' defaultCollapsed={false} collapsable={false}>
+                          {results.trades.map((x, index) => (
+                            <StatisticsSection key={index} header={`Trade #${index + 1}`} >
+                              <StatisticDate name='Open Date' value={priceSeries?.[x.open]?.time || 'n.a.'} />
+                              <StatisticDate name='Close Date' value={priceSeries?.[x.close]?.time || 'n.a.'} />
+                              <StatisticValue suffix='%' name='Max Drawdown' value={x.max_drawdown || 0} />
+                              <StatisticValue suffix='%' name='Max Intra Drawdown' value={x.max_intra_trade_drawdown} />
+                              <StatisticValue name='Sharpe Ratio' value={x.performance_ratios.sharpe} />
+                              <StatisticValue name='Sortino Ratio' value={x.performance_ratios.sortino} />
+                              <StatisticValue name='Omega Ratio' value={x.performance_ratios.omega} />
+                              <StatisticValue suffix='%' name='% Net Profit' value={x.perc_profit_loss} />
+                              <button onClick={() => {
+                                priceSeries && globalChartState.updateVisibleRange({
+                                  from: priceSeries[Math.max(0, x.open - 10)].time,
+                                  to: priceSeries[Math.min(priceSeries.length - 1, x.close + 10)].time,
+                                })
+                              }} className=' mt-4 w-full h-8 text-xs border hover:bg-indigo-500 hover:text-neutral-300 transition-colors active:text-neutral-300 active:bg-indigo-600 active:border-indigo-600 border-indigo-500 text-indigo-500 font-semibold'>
+                                Focus
+                              </button>
+                            </StatisticsSection>
+                          ))}
+                        </StatisticsSection>
+                      </div>
+                    )
+                  }
+                </div>
+                {/* <div className='w-20 h-20 bg-red-400 bottom-6 scroll right-2 absolute '>
+
+                </div> */}
               </div>
             </div>
           </div>

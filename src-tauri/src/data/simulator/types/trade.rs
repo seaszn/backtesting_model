@@ -1,9 +1,12 @@
 use crate::data::types::time_series::{PerformanceRatios, TimeSeries};
 
+use super::position::Direction;
+
 #[derive(Debug)]
 pub struct Trade {
     pub open: TradeExecution,
     pub close: TradeExecution,
+    pub direction: Direction,
     equity: TimeSeries,
 }
 
@@ -17,11 +20,12 @@ pub struct TradeExecution {
 }
 
 impl Trade {
-    pub fn new(open: TradeExecution, close: TradeExecution, equity: TimeSeries) -> Self {
+    pub fn new(open: TradeExecution, close: TradeExecution, equity: TimeSeries, direction: Direction) -> Self {
         Trade {
             open,
             close,
             equity,
+            direction
         }
     }
 

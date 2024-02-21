@@ -1,6 +1,5 @@
 use self::{
-    spot_simulator::spot_simulation,
-    types::{simulation_result::SimulationResult, simulation_type::SimulationType},
+    perp_simulator::perpertual_simulation, spot_simulator::spot_simulation, types::{simulation_result::SimulationResult, simulation_type::SimulationType}
 };
 
 use super::{
@@ -8,7 +7,9 @@ use super::{
     types::{data_entry::DataEntry, dataset::Dataset},
 };
 
-pub mod spot_simulator;
+mod perp_simulator;
+mod evaluator;
+mod spot_simulator;
 pub mod types;
 
 // const STARTING_CAPITAL: f64 = 1000.00f64;
@@ -24,6 +25,9 @@ pub fn from_csv(
 
         return match sim_type {
             x if x == SimulationType::Perpetual as i32 => {
+                if let Some(result) = perpertual_simulation(Dataset::from(parsed), critical_value, start) {
+                    return Ok(result);
+                }
                 Err("failed to perform backtest".to_string())
             }
             x if x == SimulationType::Spot as i32 => {

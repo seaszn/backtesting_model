@@ -35,7 +35,6 @@ export function TvChart(properties: TvChartProperties) {
     const [layoutOptions] = useState<LayoutOptions>(properties?.layout || DEFAULT_LAYOUT_OPTIONS);
     const [gridOptions] = useState<GridOptions>(properties?.grid || DEFAULT_GRID_OPTIONS);
     const [crosshairOptions] = useState<CrosshairOptions>(properties?.crosshair || DEFAULT_CROSSHAIR_OPTIONS);
-    const [horzScaleOptions] = useState<HorzScaleOptions>(properties?.horzScale || DEFAULT_HORZ_SCALE_OPTIONS);
     const [priceScaleOptions, updatePriceScaleOptions] = useState<PriceScaleOptions>(properties?.priceScale || DEFAULT_PRICE_SCALE_OPTIONS);
 
     const [chart, updateChart] = useState<IChartApi>();
@@ -71,7 +70,9 @@ export function TvChart(properties: TvChartProperties) {
             layout: layoutOptions,
             grid: gridOptions,
             timeScale: {
-                ...horzScaleOptions,
+                rightOffset:50,
+                fixLeftEdge: true,
+                fixRightEdge: true,
                 visible: properties.showTimeScale,
                 
             },
@@ -125,9 +126,6 @@ export function TvChart(properties: TvChartProperties) {
         // Subscribe to the crosshair move event
         chart.subscribeCrosshairMove(onCrosshairMove);
 
-        // fit the time scale to the data series
-        chart.timeScale().fitContent();
-
         // Initialize the resize observer
         const resizeObserver = new ResizeObserver(() => {
             handleResize(chart);
@@ -135,6 +133,7 @@ export function TvChart(properties: TvChartProperties) {
         resizeObserver.observe(chartContainerRef.current);
 
         // Stet the current chart
+        chart.timeScale().fitContent()
         updateChart(chart);
 
         // Unsubscribe all events on unmount
@@ -144,7 +143,7 @@ export function TvChart(properties: TvChartProperties) {
             chart.unsubscribeCrosshairMove(onCrosshairMove);
             chart.remove();
         }
-    }, [layoutOptions, gridOptions, crosshairOptions, horzScaleOptions, priceScaleOptions]);
+    }, [layoutOptions, gridOptions, crosshairOptions, priceScaleOptions]);
 
     useEffect(() => {
         if (properties.criticalSeries && criticalSeries) {

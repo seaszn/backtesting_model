@@ -6,9 +6,12 @@ use crate::data::{
     types::{data_point::DataPoint, dataset::Dataset, time_series::TimeSeries},
 };
 
-use super::types::{
-    position,
-    simulation_result::{SimulationResult, TradeResult},
+use super::{
+    evaluator::evaluate_simulation_result,
+    types::{
+        position,
+        simulation_result::{SimulationResult, TradeResult},
+    },
 };
 
 const STARTING_CAPITAL: f64 = 1f64;
@@ -44,6 +47,7 @@ pub fn spot_simulation(data: Dataset, critical_value: f64, start: i64) -> Option
                 if position.is_none() {
                     position = Some({
                         Position {
+                            direction: position::Direction::Long,
                             index: i,
                             time: *data_point.time(),
                             volume: current_equity / data_point.price(),
@@ -78,15 +82,20 @@ pub fn spot_simulation(data: Dataset, critical_value: f64, start: i64) -> Option
                             volume: current_equity / *data_point.price(),
                         },
                         intra_trade_equity,
+                        position::Direction::Long,
                     ));
 
                     position = None;
                 }
             }
         } else {
-            if data_point.signal() > &critical_value && data_point.time() >= &start {
+            if data[*[0i32, (i as i32) - 1i32].iter().max().unwrap() as usize].signal()
+                > &critical_value
+                && data_point.time() >= &start
+            {
                 position = Some({
                     Position {
+                        direction: position::Direction::Long,
                         index: i,
                         time: *data_point.time(),
                         volume: STARTING_CAPITAL / data_point.price(),
@@ -102,72 +111,5 @@ pub fn spot_simulation(data: Dataset, critical_value: f64, start: i64) -> Option
         }
     }
 
-    // Calculate all the simulation results
-    let profit_loss: f64 =
-        trades.iter().map(|x| x.profit_loss()).sum::<f64>() / (STARTING_CAPITAL / 100f64);
-    let max_percent_drawdown = equity.max_percent_drawdown()?;
-    let max_intra_trade_drawdown = trades
-        .iter()
-        .max_by(|&x, &b| {
-            x.max_percent_drawdown()
-                .unwrap_or(0f64)
-                .total_cmp(&b.max_percent_drawdown().unwrap_or(0f64))
-        })?
-        .max_percent_drawdown()?;
-    let performance_ratios = equity.risk_performance_ratios()?;
-
-    let n_trades = trades.len();
-
-    let profitable_trades: Vec<&Trade> = trades.iter().filter(|&x| x.profitable()).collect();
-    let non_profitable_trades: Vec<&Trade> = trades.iter().filter(|&x| !x.profitable()).collect();
-    let gross_profit: f64 = profitable_trades.iter().map(|x| x.profit_loss()).sum();
-    let gross_loss: f64 = non_profitable_trades
-        .iter()
-        .map(|x| x.profit_loss())
-        .sum::<f64>()
-        .abs();
-
-    let percent_profitable = (profitable_trades.len() as f64) / (n_trades as f64) * 100f64;
-    let profit_factor = gross_profit / gross_loss;
-
-    let trade_results: Vec<TradeResult> = trades
-        .iter()
-        .map(|x| TradeResult {
-            open: x.open.index,
-            close: x.close.index,
-            perc_profit_loss: ((x.close.value / x.open.value) - 1f64) * 100f64,
-            max_percent_drawdown: x.drawdown(),
-            max_intra_trade_drawdown: x.max_percent_drawdown(),
-            performance_ratios: x.performance_ratios(),
-        })
-        .collect();
-
-    if let Some(position) = position {
-        // Return the simulation result
-        return Some(SimulationResult {
-            position: Some(position.index),
-            equity_curve: equity,
-            profit_loss,
-            max_percent_drawdown,
-            max_intra_trade_drawdown,
-            performance_ratios,
-            percent_profitable,
-            profit_factor,
-            n_trades,
-            trades: trade_results,
-        });
-    }
-
-    return Some(SimulationResult {
-        position: None,
-        equity_curve: equity,
-        profit_loss,
-        max_percent_drawdown,
-        max_intra_trade_drawdown,
-        performance_ratios,
-        percent_profitable,
-        profit_factor,
-        n_trades,
-        trades: trade_results,
-    });
+    evaluate_simulation_result(&STARTING_CAPITAL, &position, &trades, &equity)
 }

@@ -1,5 +1,7 @@
 use crate::data::types::time_series::{PerformanceRatios, TimeSeries};
 
+use super::position::Direction;
+
 #[derive(Debug, serde::Serialize)]
 pub struct SimulationResult {
     pub position: Option<usize>,
@@ -18,6 +20,7 @@ pub struct SimulationResult {
 pub struct TradeResult {
     pub open: usize,
     pub close: usize,
+    pub direction: Direction,
     pub perc_profit_loss: f64,
     pub max_percent_drawdown: Option<f64>,
     pub max_intra_trade_drawdown: Option<f64>,

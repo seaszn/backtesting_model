@@ -11,6 +11,7 @@ export function evaluateSharpe(value: number): Evaluation{
     return Evaluation.Good
 }
 
+
 export function evaluateSortino(value: number): Evaluation{
     if(value < 2){
         return Evaluation.Bad

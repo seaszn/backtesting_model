@@ -94,6 +94,9 @@ impl TimeSeries {
         self.data.len()
     }
 
+    pub fn take(&self, n: usize) -> TimeSeries {
+        Self::new(self.data.split_at(n).0.to_vec())
+    }
 
     pub fn take_from(&self, start: usize, end: usize) -> TimeSeries {
         Self::new(self.data.split_at(start).1.split_at(end - start).0.to_vec())
