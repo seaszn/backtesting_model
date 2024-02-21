@@ -1,8 +1,8 @@
 'use client';
 
-import { CrosshairOptions, DeepPartial, GridOptions, HorzScaleOptions, IChartApi, ISeriesApi, InternalHorzScaleItem, LayoutOptions, LineData, LineSeriesOptions, LineStyleOptions, MouseEventParams, PriceScaleMode, PriceScaleOptions, Range, SeriesMarker, SeriesOptionsCommon, Time, WhitespaceData, createChart } from "lightweight-charts";
+import { CrosshairOptions, DeepPartial, GridOptions, HorzScaleOptions, IChartApi, ISeriesApi, LayoutOptions, LineData, LineSeriesOptions, LineStyleOptions, MouseEventParams, PriceScaleMode, PriceScaleOptions, Range, SeriesMarker, SeriesOptionsCommon, Time, WhitespaceData, createChart } from "lightweight-charts";
 import { useEffect, useRef, useState } from "react";
-import { DEFAULT_CROSSHAIR_OPTIONS, DEFAULT_GRID_OPTIONS, DEFAULT_HORZ_SCALE_OPTIONS, DEFAULT_LAYOUT_OPTIONS, DEFAULT_PRICE_SCALE_OPTIONS } from "./defaults";
+import { DEFAULT_CROSSHAIR_OPTIONS, DEFAULT_GRID_OPTIONS, DEFAULT_LAYOUT_OPTIONS, DEFAULT_PRICE_SCALE_OPTIONS } from "./defaults";
 import { TimeSeries } from "@/app/types";
 import { useGlobalChartState } from "./useChartState";
 
@@ -66,17 +66,18 @@ export function TvChart(properties: TvChartProperties) {
             localization: {
                 dateFormat: 'yyyy/MM/dd',
             },
-            
+
             layout: layoutOptions,
             grid: gridOptions,
             timeScale: {
-                rightOffset:50,
-                fixLeftEdge: false,
+                allowShiftVisibleRangeOnWhitespaceReplacement: true,
+                rightOffset: 50,
+                fixLeftEdge: true,
                 fixRightEdge: true,
                 rightBarStaysOnScroll: false,
                 lockVisibleTimeRangeOnResize: false,
                 visible: properties.showTimeScale,
-                
+
             },
             height: chartContainerRef.current.clientHeight,
             width: chartContainerRef.current.clientWidth,
@@ -110,7 +111,7 @@ export function TvChart(properties: TvChartProperties) {
 
         // Initialize the equity series if defined
         if (properties.equityCurve) {
-            
+
             const series = chart.addLineSeries({
                 priceScaleId: 'left',
                 lineWidth: 2,
@@ -121,7 +122,7 @@ export function TvChart(properties: TvChartProperties) {
             updateEquitySeries(series);
         }
 
-        if(properties.markers){
+        if (properties.markers) {
             dataSeries.setMarkers(properties.markers)
         }
 
@@ -154,7 +155,7 @@ export function TvChart(properties: TvChartProperties) {
     }, [properties.criticalSeries])
 
     useEffect(() => {
-        if(properties.markers && dataSeries){
+        if (properties.markers && dataSeries) {
             dataSeries.setMarkers(properties.markers)
         }
     }, [properties.markers])
@@ -167,7 +168,9 @@ export function TvChart(properties: TvChartProperties) {
 
     useEffect(() => {
         if (properties.data && dataSeries) {
-            dataSeries.setData(properties.data)
+            try{
+                dataSeries.setData(properties.data)
+            }catch{}
         }
     }, [properties.data])
 
@@ -184,7 +187,7 @@ export function TvChart(properties: TvChartProperties) {
             globalState.updateHorzCrosshair(event.time);
         }
     }
-    
+
     function onVisibleRangeChanged(range: Range<Time> | null) {
         if (range) {
             globalState.updateVisibleRange(range);
@@ -196,7 +199,7 @@ export function TvChart(properties: TvChartProperties) {
             chart.setCrosshairPosition(0, time, dataSeries)
         }
     }
-    
+
     function onGlobalVisibleRangeChanged(time: Range<Time>) {
         if (chart && dataSeries) {
             chart.timeScale().setVisibleRange(time);

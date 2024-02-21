@@ -28,10 +28,14 @@ impl TimeSeries {
     }
 
     pub fn std_dev(&self) -> f64 {
-        let mean = self.average();
-        let risiduals_sum = (self.values().iter().map(|x| (x - mean).powf(2.0))).sum::<f64>();
-
-        (risiduals_sum / (self.data.len() as f64)).sqrt()
+        if self.values().len() == 0 {
+            0f64
+        }else{
+            let mean = self.average();
+            let risiduals_sum = (self.values().iter().map(|x| (x - mean).powf(2.0))).sum::<f64>();
+            
+            (risiduals_sum / (self.data.len() as f64)).sqrt()
+        }
     }
 
     pub fn rate_of_change(&self, n: usize) -> Self {
@@ -76,9 +80,19 @@ impl TimeSeries {
             let neg_returns = returns.filter(|&x| x.value <= 0.0);
             let returns_avg = returns.average();
 
+            let total_pos_returns = match pos_returns.len() > 0 {
+                true => pos_returns.sum(),
+                false => 1f64,
+            };
+
+            let total_neg_returns = match neg_returns.len() > 0 {
+                true => neg_returns.sum() * -1f64,
+                false => -1f64,
+            };
+
             let sharpe = returns_avg / returns.std_dev() * tf;
             let sortino = returns_avg / neg_returns.std_dev() * tf;
-            let omega = pos_returns.sum() / (neg_returns.sum() * -1f64);
+            let omega = total_pos_returns / total_neg_returns;
 
             return Some(PerformanceRatios {
                 sharpe,
@@ -94,19 +108,15 @@ impl TimeSeries {
         self.data.len()
     }
 
-    pub fn take(&self, n: usize) -> TimeSeries {
-        Self::new(self.data.split_at(n).0.to_vec())
-    }
-
     pub fn take_from(&self, start: usize) -> TimeSeries {
-        if self.len() <= start{
+        if self.len() <= start {
             println!("{:?} / {:?}", self.len(), start)
         }
 
         if start <= 1 || self.len() < 1 {
             return self.clone();
         }
-        Self::new(self.data. split_at(start - 1).1.to_vec())
+        Self::new(self.data.split_at(start - 1).1.to_vec())
     }
 
     pub fn sum(&self) -> f64 {

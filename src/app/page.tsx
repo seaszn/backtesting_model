@@ -18,6 +18,7 @@ import { useGlobalChartState } from '@/components/tvChart/useChartState';
 import { SeriesMarker, Time } from 'lightweight-charts';
 import { Switch } from '@/components/aria/Switch';
 import { Radio, RadioGroup } from '@/components/aria/RadioGroup';
+import { toFirstVersion } from '@/utils';
 
 export default function Home() {
   const globalChartState = useGlobalChartState();
@@ -58,6 +59,9 @@ export default function Home() {
             value: criticalValue
           }
         }))
+
+        updateCriticalValue(0);
+
       });
     }
   }, [file, startDate])
@@ -130,15 +134,15 @@ export default function Home() {
         }
       ])
 
-      if (results.position) {
-        result.push({ // Open
-          time: priceSeries[results.position.index - 1].time,
-          position: 'belowBar',
-          color: '#22c55e',
-          shape: 'arrowUp',
-          text: 'Entry',
-        })
-      }
+      // if (results.position && priceSeries.length > 0) {
+      //   // result.push({ // Open
+      //   //   time: priceSeries[results.position.index].time,
+      //   //   position: 'belowBar',
+      //   //   color: '#22c55e',
+      //   //   shape: 'arrowUp',
+      //   //   text: 'Entry',
+      //   // })
+      // }
 
       if (result) {
         return result.sort((a, b) => new Date(a.time as string).valueOf() - new Date(b.time as string).valueOf());
@@ -147,10 +151,10 @@ export default function Home() {
   }
 
   function getPerpetualMarkers(): SeriesMarker<Time>[] | undefined {
-    if (priceSeries && results) {
+    if (priceSeries && results && priceSeries.length > 0) {
       const result = results?.trades.flatMap<SeriesMarker<Time>>(x => [
         { // Open
-          time: priceSeries[x.open]?.time,
+          time: priceSeries[x.open]?.time || '2018-01-01',
           position: x.direction == 'Long' ? 'belowBar' : 'aboveBar',
           color: x.direction == 'Long' ? '#22c55e' : '#e03f5e',// '#22c55e',
           shape: x.direction == 'Long' ? 'arrowUp' : 'arrowDown',
@@ -158,15 +162,15 @@ export default function Home() {
         },
       ])
 
-      if (results.position) {
-        result.push({ // Open
-          time: priceSeries[Math.max(0, results.position.index - 1)].time,
-          position: 'belowBar',
-          color: '#22c55e',
-          shape: results.position.direction == 'Short' ? 'arrowUp' : 'arrowDown',
-          text: 'entry on close',
-        })
-      }
+      // if (results.position) {
+      //   result.push({ // Open
+      //     time: priceSeries[Math.max(0, results.position.index - 1)]?.time || startDate.toString(),
+      //     position: 'belowBar',
+      //     color: '#22c55e',
+      //     shape: results.position.direction == 'Short' ? 'arrowUp' : 'arrowDown',
+      //     text: 'entry on close',
+      //   })
+      // }
 
       if (result) {
         return result.sort((a, b) => new Date(a.time as string).valueOf() - new Date(b.time as string).valueOf());
@@ -199,9 +203,23 @@ export default function Home() {
     return false
   }
 
+  function getSignalStep() {
+    let values = signalSeries?.map(x => x.value) || [Number.MAX_VALUE, Number.MIN_VALUE];
+    let maximumAbs = Math.max(Math.abs(Math.min(...values)), Math.max(...values));
+
+
+    let pow = 0;
+
+    // while (maximumAbs )
+    // let powOf10 = maximumAbs % 10e3
+    return toFirstVersion(maximumAbs / 1e2);
+
+    return 0.01;
+  }
+
   return (
-    <div className="h-screen w-screen bg-neutral-950">
-      <div className='flex w-full h-full'>
+    <div className="h-screen  w-screen bg-neutral-950">
+      <div className='flex overflow-hidden w-full h-full'>
         {/* Chart panels */}
         <PanelGroup autoSaveId='chart-container' direction='vertical'>
           {
@@ -223,14 +241,14 @@ export default function Home() {
               <div className=' my-auto flex flex-col text-center'>
                 <CandlestickChart strokeWidth={1} className=' mx-auto w-40 h-40 text-neutral-500' />
                 <label className=' text-xl font-semibold mx-4 mt-6 text-center text-neutral-500'>
-                  Oops..! Please select a file to run a backtest
+                  {file ? "Oops.., that didn't work!" : "Oops..! Please select a file to run a backtest"}
                 </label>
               </div>
             )
           }
         </PanelGroup>
         {/* Menu */}
-        <div className=' select-none max-w-sm w-full pb-6 px-6 pt-6 border-l scrollbar-default border-neutral-700 shrink-0 '>
+        <div className=' select-none max-w-sm w-full px-6 mt-6 border-l scrollbar-default border-neutral-700 shrink-0 '>
           <div className=' w-full h-full flex gap-4 flex-col'>
             {/* Header */}
             <div className='flex justify-between w-full'>
@@ -254,7 +272,7 @@ export default function Home() {
                 </button>
               </div>
             </div>
-            <div className='border-t  flex flex-col border-neutral-700 ' style={{ height: 'calc(100% - 1.5rem)' }}>
+            <div className='border-t  flex flex-col overflow-hidden border-neutral-700 ' style={{ height: 'calc(100% - 1.5rem)' }}>
               {/* Configuration Section */}
               <div className=''>
                 <div className='p-4 px-3 border py-4 border-neutral-700'>
@@ -267,10 +285,10 @@ export default function Home() {
                       <label className={`text-xs my-auto shrink-0 ${file ? 'text-neutral-300' : 'text-neutral-500'}`}>{file || 'Please select a file...'}</label>
                     </div>
                   </div>
-                  <div className='px-1 w-full h-7 mt-4 flex transition-colors flex-row-reverse focus-within:border-indigo-500 hover:border-indigo-500 gap-2 pt-0.5 overflow-hidden overflow-ellipsis border-b border-neutral-700'>
+                  <div className={`px-1 w-full h-7 mt-4 flex transition-colors flex-row-reverse gap-2 pt-0.5 overflow-hidden overflow-ellipsis border-b border-neutral-700 ${file && 'focus-within:border-indigo-500 hover:border-indigo-500 '}`}>
                     <div className=' grow flex h-full overflow-hidden text-neutral-300 overflow-ellipsis shrink'>
                       <label className='text-xs my-auto shrink-0 mr-4 '>Crossover Value:</label>
-                      <input disabled={file == undefined} type='number' onChange={handleChange} value={criticalValue} min={ -1e9} max={1e9} step={1} className=' num-input p-0 disabled:text-neutral-500 pr-1 text-right shrink bg-transparent w-24 text-xs h-full focus:outline-none grow' />
+                      <input disabled={file == undefined} type='number' onChange={handleChange} value={criticalValue} min={-1e9} max={1e9} step={getSignalStep()} className=' num-input p-0 disabled:text-neutral-500 pr-1 text-right shrink bg-transparent w-24 text-xs h-full focus:outline-none grow' />
                     </div>
                   </div>
                   <div className='px-1 w-full h-7 mt-4 flex transition-colors flex-row-reverse focus-within:border-indigo-500 gap-2 pt-0.5  border-b border-neutral-700'>
@@ -303,19 +321,19 @@ export default function Home() {
                       </DialogTrigger>
                     </div>
                   </div>
-                  <div className='px-1 w-full h-7 mt-4 flex transition-colors flex-row-reverse  hover:border-indigo-500 gap-2 pt-0.5 overflow-hidden overflow-ellipsis border-b border-neutral-700'>
+                  <div onClick={() => file && updatePerpetual(!perpetual)} className={`px-1 w-full h-7 mt-4 flex transition-colors flex-row-reverse  gap-2 pt-0.5 overflow-hidden overflow-ellipsis border-b border-neutral-700 ${file && 'hover:border-indigo-500'}`}>
                     <div className=' grow flex h-full justify-between w-full overflow-hidden text-neutral-300 overflow-ellipsis shrink'>
                       <label className='text-xs my-auto shrink-0 mr-4 '>
                         Perpetual Simulation
                       </label>
-                      <Switch onChange={updatePerpetual} isSelected={perpetual}>
+                      <Switch isDisabled={file == undefined} onChange={updatePerpetual} isSelected={perpetual}>
                         <></>
                       </Switch>
                     </div>
                   </div>
                 </div>
               </div>
-              <div className='grow shrink mt-6 border-t border-neutral-700 relative w-full overflow-y-auto'>
+              <div className='grow shrink mt-6 border-t border-neutral-700 relative w-full overflow-hidden'>
                 <div className={`h-full w-full absolute bg-neutral-950 transition-opacity z-40 flex ${results ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
                   <div className={`text-center mx-auto flex flex-col p-4 w-56 h-56 mt-24`}>
                     {
@@ -354,8 +372,8 @@ export default function Home() {
                               <StatisticValue suffix='%' name='Max Drawdown' value={x.max_drawdown || 0} />
                               <StatisticValue suffix='%' name='Max Intra Drawdown' value={x.max_intra_trade_drawdown} />
                               <StatisticValue name='Sharpe Ratio' value={x.performance_ratios?.sharpe || NaN} />
-                              <StatisticValue name='Sortino Ratio' value={x.performance_ratios?.sortino  || NaN} />
-                              <StatisticValue name='Omega Ratio' value={x.performance_ratios?.omega  || NaN} />
+                              <StatisticValue name='Sortino Ratio' value={x.performance_ratios?.sortino || NaN} />
+                              <StatisticValue name='Omega Ratio' value={x.performance_ratios?.omega || NaN} />
                               <StatisticValue suffix='%' name='% Net Profit' value={x.perc_profit_loss} />
                               <button onClick={() => {
                                 priceSeries && globalChartState.updateVisibleRange({

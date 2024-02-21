@@ -8,10 +8,7 @@ use crate::data::{
 
 use super::{
     evaluator::evaluate_simulation_result,
-    types::{
-        position::{self, Direction},
-        simulation_result::SimulationResult,
-    },
+    types::{position::Direction, simulation_result::SimulationResult},
 };
 
 const STARTING_CAPITAL: f64 = 1f64;

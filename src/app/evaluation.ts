@@ -68,10 +68,10 @@ export function evaluatePercentProfitable(value: number): Evaluation{
 }
 
 export function evaluateIntraTradeDrawdown(value: number): Evaluation{
-    if(value < 40){
+    if(value >= 40){
         return Evaluation.Bad
     }
-    else if(value >= 25){
+    else if(value < 25){
         return Evaluation.Medium
     }
 
