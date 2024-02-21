@@ -47,7 +47,7 @@ impl TimeSeries {
     }
 
     pub fn max_percent_drawdown(&self) -> Option<f64> {
-        if self.data.len() > 0 {
+        if self.data.len() > 1 {
             let mut max_equity = f64::MIN;
             let mut max_drawdown = f64::MAX;
 
@@ -69,7 +69,7 @@ impl TimeSeries {
     }
 
     pub fn risk_performance_ratios(&self) -> Option<PerformanceRatios> {
-        if self.data.len() > 0 {
+        if self.data.len() > 1 {
             let tf = Self::check_tf("").sqrt();
             let returns = self.rate_of_change(1);
             let pos_returns = returns.filter(|&x| x.value >= 0.0);
@@ -98,8 +98,15 @@ impl TimeSeries {
         Self::new(self.data.split_at(n).0.to_vec())
     }
 
-    pub fn take_from(&self, start: usize, end: usize) -> TimeSeries {
-        Self::new(self.data.split_at(start).1.split_at(end - start).0.to_vec())
+    pub fn take_from(&self, start: usize) -> TimeSeries {
+        if self.len() <= start{
+            println!("{:?} / {:?}", self.len(), start)
+        }
+
+        if start <= 1 || self.len() < 1 {
+            return self.clone();
+        }
+        Self::new(self.data. split_at(start - 1).1.to_vec())
     }
 
     pub fn sum(&self) -> f64 {

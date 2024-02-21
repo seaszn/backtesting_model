@@ -8,10 +8,7 @@ use crate::data::{
 
 use super::{
     evaluator::evaluate_simulation_result,
-    types::{
-        position,
-        simulation_result::{SimulationResult, TradeResult},
-    },
+    types::{position, simulation_result::SimulationResult},
 };
 
 const STARTING_CAPITAL: f64 = 1f64;
@@ -48,10 +45,11 @@ pub fn spot_simulation(data: Dataset, critical_value: f64, start: i64) -> Option
                     position = Some({
                         Position {
                             direction: position::Direction::Long,
+                            price: *data_point.price(),
                             index: i,
                             time: *data_point.time(),
-                            volume: current_equity / data_point.price(),
-                            value: current_equity,
+                            volume: new_equity / data_point.price(),
+                            value: new_equity,
                         }
                     });
                 }
@@ -64,7 +62,7 @@ pub fn spot_simulation(data: Dataset, critical_value: f64, start: i64) -> Option
 
                 // Check if the signal just flipped short from long, if so, log the trade
                 if let Some(current_position) = position {
-                    let intra_trade_equity = equity.take_from(current_position.index, i);
+                    let intra_trade_equity = equity.take_from(current_position.index);
 
                     trades.push(Trade::new(
                         TradeExecution {
@@ -97,6 +95,7 @@ pub fn spot_simulation(data: Dataset, critical_value: f64, start: i64) -> Option
                     Position {
                         direction: position::Direction::Long,
                         index: i,
+                        price: *data_point.price(),
                         time: *data_point.time(),
                         volume: STARTING_CAPITAL / data_point.price(),
                         value: STARTING_CAPITAL,
@@ -110,6 +109,9 @@ pub fn spot_simulation(data: Dataset, critical_value: f64, start: i64) -> Option
             })
         }
     }
+
+    // println!("{:#?}", equity.take(trades[0].close.index));
+    // println!("{:#?}", trades[0]);
 
     evaluate_simulation_result(&STARTING_CAPITAL, &position, &trades, &equity)
 }

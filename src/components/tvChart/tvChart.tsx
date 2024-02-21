@@ -71,8 +71,10 @@ export function TvChart(properties: TvChartProperties) {
             grid: gridOptions,
             timeScale: {
                 rightOffset:50,
-                fixLeftEdge: true,
+                fixLeftEdge: false,
                 fixRightEdge: true,
+                rightBarStaysOnScroll: false,
+                lockVisibleTimeRangeOnResize: false,
                 visible: properties.showTimeScale,
                 
             },

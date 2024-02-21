@@ -1,6 +1,10 @@
 use crate::data::types::time_series::TimeSeries;
 
-use super::types::{position::Position, simulation_result::{SimulationResult, TradeResult}, trade::Trade};
+use super::types::{
+    position::Position,
+    simulation_result::{ResultPosition, SimulationResult, TradeResult},
+    trade::Trade,
+};
 
 fn eval_profit_loss(trades: &Vec<Trade>, starting_capital: &f64) -> f64 {
     trades.iter().map(|x| x.profit_loss()).sum::<f64>() / (starting_capital / 100f64)
@@ -52,7 +56,12 @@ fn eval_trade_results(trades: &Vec<Trade>) -> Vec<TradeResult> {
         .collect()
 }
 
-pub fn evaluate_simulation_result(starting_capital: &f64, position: &Option<Position>, trades: &Vec<Trade>, equity: &TimeSeries) -> Option<SimulationResult>{
+pub fn evaluate_simulation_result(
+    starting_capital: &f64,
+    position: &Option<Position>,
+    trades: &Vec<Trade>,
+    equity: &TimeSeries,
+) -> Option<SimulationResult> {
     // Calculate all the simulation results
     let profit_loss = eval_profit_loss(trades, starting_capital);
     let max_percent_drawdown = equity.max_percent_drawdown()?;
@@ -66,7 +75,10 @@ pub fn evaluate_simulation_result(starting_capital: &f64, position: &Option<Posi
     if let Some(position) = position {
         // Return the simulation result
         return Some(SimulationResult {
-            position: Some(position.index),
+            position: Some(ResultPosition {
+                index: position.index,
+                direction: position.direction,
+            }),
             equity_curve: equity.clone(),
             profit_loss,
             max_percent_drawdown,

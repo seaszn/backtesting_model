@@ -7,7 +7,7 @@ pub struct Trade {
     pub open: TradeExecution,
     pub close: TradeExecution,
     pub direction: Direction,
-    equity: TimeSeries,
+    pub equity: TimeSeries,
 }
 
 #[derive(Debug, serde::Serialize)]

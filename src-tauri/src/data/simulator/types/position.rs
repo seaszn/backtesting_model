@@ -9,6 +9,7 @@ pub struct Position {
     pub index: usize,
     pub direction: Direction,
     pub volume: f64,
+    pub price: f64,
     pub value: f64,
     pub time: i64,
 }

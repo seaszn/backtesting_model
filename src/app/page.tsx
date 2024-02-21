@@ -11,11 +11,13 @@ import { StatisticsSection } from '@/components/statisticsSection';
 import { DataRequest, ISeries, SimulationResult, TimeSeries } from './types';
 import { StatisticDate } from '@/components/statisticsDate';
 import { ExclamationTriangleIcon } from '@heroicons/react/20/solid';
-import { Button, Calendar, CalendarCell, CalendarGrid, DateInput, DatePicker, DateSegment, Dialog, DialogTrigger, Group, Heading, Label, OverlayArrow, Popover, Switch } from 'react-aria-components';
+import { Button, Calendar, CalendarCell, CalendarGrid, Dialog, DialogTrigger, Heading, Popover } from 'react-aria-components';
 import { parseDate, CalendarDate } from '@internationalized/date';
 import { evaluateIntraTradeDrawdown, evaluateNTrades, evaluateOmega, evaluatePercentProfitable, evaluateProfitFactor, evaluateSharpe, evaluateSortino } from './evaluation';
 import { useGlobalChartState } from '@/components/tvChart/useChartState';
 import { SeriesMarker, Time } from 'lightweight-charts';
+import { Switch } from '@/components/aria/Switch';
+import { Radio, RadioGroup } from '@/components/aria/RadioGroup';
 
 export default function Home() {
   const globalChartState = useGlobalChartState();
@@ -26,8 +28,9 @@ export default function Home() {
   const [startDate, updateStartDate] = useState(parseDate('2018-01-01'));
   const [results, updateResults] = useState<SimulationResult>();
   const [criticalValue, updateCriticalValue] = useState(0.0);
+  const [perpetual, updatePerpetual] = useState(false);
 
-  const [paddingSeries, updatePaddingSeries] = useState<TimeSeries>();
+  // const [paddingSeries, updatePaddingSeries] = useState<TimeSeries>();
   const [priceSeries, updatePriceSeries] = useState<TimeSeries>();
   const [signalSeries, updateSignalSeries] = useState<TimeSeries>();
   const [criticalSeries, updateCriticalSeries] = useState<TimeSeries>();
@@ -71,22 +74,25 @@ export default function Home() {
   }, [criticalValue]);
 
   useEffect(() => {
-
     if (priceSeries && signalSeries) {
       updateLoading(true);
       updateError(false);
-      invoke<SimulationResult>('run_simulation', { path: file, simType: SimulationType.Spot as number, criticalValue, start: new Date(startDate.toString()).valueOf() / 1000 }).then(response => {
+
+      invoke<SimulationResult>('run_simulation', {
+        path: file,
+        simType: perpetual ? SimulationType.Perpetual : SimulationType.Spot as number,
+        criticalValue,
+        start: new Date(startDate.toString()).valueOf() / 1000
+      }).then(response => {
         updateResults(response)
         updateLoading(false);
-
       }).catch((e) => {
-        console.log(e);
-
+        updateResults(undefined);
         updateError(true)
         updateLoading(false);
       });
     }
-  }, [priceSeries, signalSeries, criticalSeries, startDate]);
+  }, [priceSeries, criticalSeries, startDate, perpetual]);
 
   function getEquityCurve(): TimeSeries | undefined {
     return results?.equity_curve.data.map(x => {
@@ -105,50 +111,78 @@ export default function Home() {
     })
   }
 
-  function getMarkers(): SeriesMarker<Time>[] | undefined {
+  function getSpotMarkers(): SeriesMarker<Time>[] | undefined {
     if (priceSeries && results) {
       const result = results?.trades.flatMap<SeriesMarker<Time>>(x => [
         { // Open
-          time: priceSeries[Math.max(0, x.open - 1)]?.time,
+          time: priceSeries[x.open - 1]?.time,
           position: 'belowBar',
           color: '#22c55e',
           shape: 'arrowUp',
-          text: 'entry on close',
+          text: `Entry`,
         },
         { // Close
           time: priceSeries[Math.min(x.close - 1, priceSeries.length - 1)].time,
           position: 'aboveBar',
           color: '#e03f5e',
           shape: 'arrowDown',
-          text: 'exit on close',
+          text: `Exit`,
         }
       ])
 
       if (results.position) {
         result.push({ // Open
-          time: priceSeries[results.position - 1].time,
+          time: priceSeries[results.position.index - 1].time,
           position: 'belowBar',
           color: '#22c55e',
           shape: 'arrowUp',
+          text: 'Entry',
+        })
+      }
+
+      if (result) {
+        return result.sort((a, b) => new Date(a.time as string).valueOf() - new Date(b.time as string).valueOf());
+      }
+    }
+  }
+
+  function getPerpetualMarkers(): SeriesMarker<Time>[] | undefined {
+    if (priceSeries && results) {
+      const result = results?.trades.flatMap<SeriesMarker<Time>>(x => [
+        { // Open
+          time: priceSeries[x.open]?.time,
+          position: x.direction == 'Long' ? 'belowBar' : 'aboveBar',
+          color: x.direction == 'Long' ? '#22c55e' : '#e03f5e',// '#22c55e',
+          shape: x.direction == 'Long' ? 'arrowUp' : 'arrowDown',
+          text: x.direction
+        },
+      ])
+
+      if (results.position) {
+        result.push({ // Open
+          time: priceSeries[Math.max(0, results.position.index - 1)].time,
+          position: 'belowBar',
+          color: '#22c55e',
+          shape: results.position.direction == 'Short' ? 'arrowUp' : 'arrowDown',
           text: 'entry on close',
         })
       }
 
       if (result) {
-        return result;
+        return result.sort((a, b) => new Date(a.time as string).valueOf() - new Date(b.time as string).valueOf());
       }
     }
   }
 
   function handleChange(event: ChangeEvent<HTMLInputElement>) {
-      try {
-        let value = Number.parseFloat(event.target.value)
+    try {
+      let value = Number.parseFloat(event.target.value)
 
-        if(!Number.isNaN(value)){
-          updateCriticalValue(Number.parseFloat(event.target.value))
-        }
+      if (!Number.isNaN(value)) {
+        updateCriticalValue(Number.parseFloat(event.target.value))
       }
-      catch { }
+    }
+    catch { }
   };
 
   function onUpdateStartDate(e: CalendarDate) {
@@ -175,7 +209,7 @@ export default function Home() {
               <>
                 <Panel id='price-chart'>
                   <div className='h-full w-full'>
-                    <TvChart markers={getMarkers()} defaultLog={true} showTimeScale={false} data={priceSeries} equityCurve={getEquityCurve()} />
+                    <TvChart markers={perpetual ? getPerpetualMarkers() : getSpotMarkers()} defaultLog={true} showTimeScale={false} data={priceSeries} equityCurve={getEquityCurve()} />
                   </div>
                 </Panel>
                 <PanelResizeHandle className='h-1 transition-colors bggreen hover:bg-neutral-500 active:bg-neutral-500 bg-neutral-700' />
@@ -188,13 +222,15 @@ export default function Home() {
             ) : (
               <div className=' my-auto flex flex-col text-center'>
                 <CandlestickChart strokeWidth={1} className=' mx-auto w-40 h-40 text-neutral-500' />
-                <label className=' text-xl font-semibold mx-4 mt-6 text-center text-neutral-500'> Oops..! Please select a file to run a backtest</label>
+                <label className=' text-xl font-semibold mx-4 mt-6 text-center text-neutral-500'>
+                  Oops..! Please select a file to run a backtest
+                </label>
               </div>
             )
           }
         </PanelGroup>
         {/* Menu */}
-        <div className=' select-none max-w-sm w-full px-6 pt-6 border-l border-neutral-700 shrink-0 '>
+        <div className=' select-none max-w-sm w-full pb-6 px-6 pt-6 border-l scrollbar-default border-neutral-700 shrink-0 '>
           <div className=' w-full h-full flex gap-4 flex-col'>
             {/* Header */}
             <div className='flex justify-between w-full'>
@@ -234,7 +270,7 @@ export default function Home() {
                   <div className='px-1 w-full h-7 mt-4 flex transition-colors flex-row-reverse focus-within:border-indigo-500 hover:border-indigo-500 gap-2 pt-0.5 overflow-hidden overflow-ellipsis border-b border-neutral-700'>
                     <div className=' grow flex h-full overflow-hidden text-neutral-300 overflow-ellipsis shrink'>
                       <label className='text-xs my-auto shrink-0 mr-4 '>Crossover Value:</label>
-                      <input disabled={file == undefined} type='number' onChange={handleChange} value={criticalValue} min={-1e9} max={1e9} step={0.01} className=' num-input p-0 disabled:text-neutral-500 pr-1 text-right shrink bg-transparent w-24 text-xs h-full focus:outline-none grow' />
+                      <input disabled={file == undefined} type='number' onChange={handleChange} value={criticalValue} min={ -1e9} max={1e9} step={1} className=' num-input p-0 disabled:text-neutral-500 pr-1 text-right shrink bg-transparent w-24 text-xs h-full focus:outline-none grow' />
                     </div>
                   </div>
                   <div className='px-1 w-full h-7 mt-4 flex transition-colors flex-row-reverse focus-within:border-indigo-500 gap-2 pt-0.5  border-b border-neutral-700'>
@@ -267,6 +303,16 @@ export default function Home() {
                       </DialogTrigger>
                     </div>
                   </div>
+                  <div className='px-1 w-full h-7 mt-4 flex transition-colors flex-row-reverse  hover:border-indigo-500 gap-2 pt-0.5 overflow-hidden overflow-ellipsis border-b border-neutral-700'>
+                    <div className=' grow flex h-full justify-between w-full overflow-hidden text-neutral-300 overflow-ellipsis shrink'>
+                      <label className='text-xs my-auto shrink-0 mr-4 '>
+                        Perpetual Simulation
+                      </label>
+                      <Switch onChange={updatePerpetual} isSelected={perpetual}>
+                        <></>
+                      </Switch>
+                    </div>
+                  </div>
                 </div>
               </div>
               <div className='grow shrink mt-6 border-t border-neutral-700 relative w-full overflow-y-auto'>
@@ -289,9 +335,9 @@ export default function Home() {
                         {/* Statistics Section */}
                         <StatisticsSection header='Statistics' collapsable={false}>
                           <StatisticValue evaluate={evaluateIntraTradeDrawdown} suffix='%' name='Intra Trade Max Drawdown' value={results.max_intra_trade_drawdown} />
-                          <StatisticValue evaluate={evaluateSharpe} name='Sharpe Ratio' value={results.performance_ratios.sharpe} />
-                          <StatisticValue evaluate={evaluateSortino} name='Sortino Ratio' value={results.performance_ratios.sortino} />
-                          <StatisticValue evaluate={evaluateOmega} name='Omega Ratio' value={results.performance_ratios.omega} />
+                          <StatisticValue evaluate={evaluateSharpe} name='Sharpe Ratio' value={results.performance_ratios?.sharpe || NaN} />
+                          <StatisticValue evaluate={evaluateSortino} name='Sortino Ratio' value={results.performance_ratios?.sortino || NaN} />
+                          <StatisticValue evaluate={evaluateOmega} name='Omega Ratio' value={results.performance_ratios?.omega || NaN} />
                           <StatisticValue evaluate={evaluateProfitFactor} name='Profit Factor' value={results.profit_factor} />
                           <StatisticValue evaluate={evaluatePercentProfitable} suffix='%' name='% Profitable' value={results.percent_profitable} />
                           <StatisticValue evaluate={evaluateNTrades} name='# of Trades' value={results.n_trades} />
@@ -307,9 +353,9 @@ export default function Home() {
                               <StatisticDate name='Close Date' value={priceSeries?.[x.close]?.time || 'n.a.'} />
                               <StatisticValue suffix='%' name='Max Drawdown' value={x.max_drawdown || 0} />
                               <StatisticValue suffix='%' name='Max Intra Drawdown' value={x.max_intra_trade_drawdown} />
-                              <StatisticValue name='Sharpe Ratio' value={x.performance_ratios.sharpe} />
-                              <StatisticValue name='Sortino Ratio' value={x.performance_ratios.sortino} />
-                              <StatisticValue name='Omega Ratio' value={x.performance_ratios.omega} />
+                              <StatisticValue name='Sharpe Ratio' value={x.performance_ratios?.sharpe || NaN} />
+                              <StatisticValue name='Sortino Ratio' value={x.performance_ratios?.sortino  || NaN} />
+                              <StatisticValue name='Omega Ratio' value={x.performance_ratios?.omega  || NaN} />
                               <StatisticValue suffix='%' name='% Net Profit' value={x.perc_profit_loss} />
                               <button onClick={() => {
                                 priceSeries && globalChartState.updateVisibleRange({
