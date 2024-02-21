@@ -17,12 +17,30 @@ import { evaluateIntraTradeDrawdown, evaluateNTrades, evaluateOmega, evaluatePer
 import { useGlobalChartState } from '@/components/tvChart/useChartState';
 import { SeriesMarker, Time } from 'lightweight-charts';
 import { Switch } from '@/components/aria/Switch';
-import { Radio, RadioGroup } from '@/components/aria/RadioGroup';
 import { toFirstVersion } from '@/utils';
+
+function getPaddingData(series: TimeSeries): TimeSeries {
+  const first = new Date(series[0].time).valueOf();
+  const interval = new Date(series[1].time).valueOf() - first;
+  const padding = 200;
+  const max = new Date(series[series.length - 1].time).valueOf() + (interval * padding)
+  const min = first - (interval * padding)
+  let result: TimeSeries = []
+
+  for (let i = min; i < max; i += interval) {
+    result.push({
+      time: new Date(i).toISOString().split('T')[0],
+      value: 0
+    })
+  }
+
+  return result;
+}
 
 export default function Home() {
   const globalChartState = useGlobalChartState();
 
+  const [padding, updatePadding] = useState<TimeSeries>()
   const [file, updateFile] = useState<string>()
   const [loading, updateLoading] = useState<boolean>(false)
   const [error, updateError] = useState<boolean>(false)
@@ -31,7 +49,6 @@ export default function Home() {
   const [criticalValue, updateCriticalValue] = useState(0.0);
   const [perpetual, updatePerpetual] = useState(false);
 
-  // const [paddingSeries, updatePaddingSeries] = useState<TimeSeries>();
   const [priceSeries, updatePriceSeries] = useState<TimeSeries>();
   const [signalSeries, updateSignalSeries] = useState<TimeSeries>();
   const [criticalSeries, updateCriticalSeries] = useState<TimeSeries>();
@@ -39,12 +56,13 @@ export default function Home() {
   useEffect(() => {
     if (file) {
       invoke<DataRequest>('get_data_from_file', { path: file }).then(response => {
-        updatePriceSeries(response.price_series.data.map<ISeries>(x => {
+        const price = response.price_series.data.map<ISeries>(x => {
           return {
             time: new Date(x.time * 1000).toISOString().split('T')[0],
             value: x.value
           }
-        }))
+        })
+        updatePriceSeries(price)
 
         updateSignalSeries(response.signal_series.data.map<ISeries>(x => {
           return {
@@ -53,15 +71,15 @@ export default function Home() {
           }
         }))
 
+        updateCriticalValue(0);
         updateCriticalSeries(response.signal_series.data.map<ISeries>(x => {
           return {
             time: new Date(x.time * 1000).toISOString().split('T')[0],
-            value: criticalValue
+            value: 0
           }
         }))
 
-        updateCriticalValue(0);
-
+        updatePadding(getPaddingData(price))
       });
     }
   }, [file, startDate])
@@ -162,15 +180,15 @@ export default function Home() {
         },
       ])
 
-      // if (results.position) {
-      //   result.push({ // Open
-      //     time: priceSeries[Math.max(0, results.position.index - 1)]?.time || startDate.toString(),
-      //     position: 'belowBar',
-      //     color: '#22c55e',
-      //     shape: results.position.direction == 'Short' ? 'arrowUp' : 'arrowDown',
-      //     text: 'entry on close',
-      //   })
-      // }
+      if (results.position) {
+        result.push({ // Open
+          time: priceSeries[Math.max(0, results.position.index - 1)]?.time || startDate.toString(),
+          position: 'belowBar',
+          color: '#22c55e',
+          shape: results.position.direction == 'Short' ? 'arrowUp' : 'arrowDown',
+          text: 'entry on close',
+        })
+      }
 
       if (result) {
         return result.sort((a, b) => new Date(a.time as string).valueOf() - new Date(b.time as string).valueOf());
@@ -205,16 +223,9 @@ export default function Home() {
 
   function getSignalStep() {
     let values = signalSeries?.map(x => x.value) || [Number.MAX_VALUE, Number.MIN_VALUE];
-    let maximumAbs = Math.max(Math.abs(Math.min(...values)), Math.max(...values));
+    let maximumAbs = Math.abs(Math.min(...values)) + Math.max(...values);
 
-
-    let pow = 0;
-
-    // while (maximumAbs )
-    // let powOf10 = maximumAbs % 10e3
     return toFirstVersion(maximumAbs / 1e2);
-
-    return 0.01;
   }
 
   return (
@@ -227,13 +238,13 @@ export default function Home() {
               <>
                 <Panel id='price-chart'>
                   <div className='h-full w-full'>
-                    <TvChart markers={perpetual ? getPerpetualMarkers() : getSpotMarkers()} defaultLog={true} showTimeScale={false} data={priceSeries} equityCurve={getEquityCurve()} />
+                    <TvChart paddingSeries={padding} markers={perpetual ? getPerpetualMarkers() : getSpotMarkers()} defaultLog={true} showTimeScale={false} data={priceSeries} equityCurve={getEquityCurve()} />
                   </div>
                 </Panel>
                 <PanelResizeHandle className='h-1 transition-colors bggreen hover:bg-neutral-500 active:bg-neutral-500 bg-neutral-700' />
                 <Panel id='signal-chart'>
                   <div className='h-full w-full'>
-                    <TvChart showTimeScale={true} data={signalSeries} criticalSeries={criticalSeries} />
+                    <TvChart paddingSeries={padding} showTimeScale={true} data={signalSeries} criticalSeries={criticalSeries} />
                   </div>
                 </Panel>
               </>

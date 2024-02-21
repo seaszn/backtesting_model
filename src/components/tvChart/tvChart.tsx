@@ -11,6 +11,7 @@ export interface TvChartProperties {
     markers?: SeriesMarker<Time>[],
     equityCurve?: TimeSeries;
     criticalSeries?: TimeSeries;
+    paddingSeries?: TimeSeries;
     layout?: LayoutOptions,
     grid?: GridOptions,
     crosshair?: CrosshairOptions,
@@ -71,7 +72,6 @@ export function TvChart(properties: TvChartProperties) {
             grid: gridOptions,
             timeScale: {
                 allowShiftVisibleRangeOnWhitespaceReplacement: true,
-                rightOffset: 50,
                 fixLeftEdge: true,
                 fixRightEdge: true,
                 rightBarStaysOnScroll: false,
@@ -89,13 +89,19 @@ export function TvChart(properties: TvChartProperties) {
             leftPriceScale: priceScaleOptions,
         });
 
-        // Initialize the data series
-        const dataSeries = chart.addLineSeries({
-            color: '#4338ca',
-            lineWidth: 2
-        });
-        dataSeries.setData(properties.data);
-        updateDataSeries(dataSeries)
+        if (properties.data) {
+            // Initialize the data series
+            const dataSeries = chart.addLineSeries({
+                color: '#4338ca',
+                lineWidth: 2
+            });
+            dataSeries.setData(properties.data);
+
+            if (properties.markers) {
+                dataSeries.setMarkers(properties.markers)
+            }
+            updateDataSeries(dataSeries)
+        }
 
         // Initialize the critical series if defined
         if (properties.criticalSeries) {
@@ -111,7 +117,6 @@ export function TvChart(properties: TvChartProperties) {
 
         // Initialize the equity series if defined
         if (properties.equityCurve) {
-
             const series = chart.addLineSeries({
                 priceScaleId: 'left',
                 lineWidth: 2,
@@ -122,8 +127,13 @@ export function TvChart(properties: TvChartProperties) {
             updateEquitySeries(series);
         }
 
-        if (properties.markers) {
-            dataSeries.setMarkers(properties.markers)
+        // Initialize the equity series if defined
+        if (properties.paddingSeries) {
+            const series = chart.addBaselineSeries({
+                visible: false
+            });
+
+            series.setData(properties.paddingSeries);
         }
 
         // Subscribe to the crosshair move event
@@ -168,9 +178,9 @@ export function TvChart(properties: TvChartProperties) {
 
     useEffect(() => {
         if (properties.data && dataSeries) {
-            try{
+            try {
                 dataSeries.setData(properties.data)
-            }catch{}
+            } catch { }
         }
     }, [properties.data])
 
